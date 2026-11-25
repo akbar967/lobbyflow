@@ -101,7 +101,7 @@
         @endif
     </div>
 
-    <!-- Pesan Sukses -->
+    <!-- Pesan Sukses & Error -->
     @if($successMessage || session('success'))
         <div class="mb-5 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl shadow-sm flex items-center justify-between transition">
             <div class="flex items-center gap-2.5">
@@ -113,6 +113,70 @@
             </button>
         </div>
     @endif
+
+    @if($errorMessage)
+        <div class="mb-5 p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-xl shadow-sm flex items-center justify-between transition">
+            <div class="flex items-center gap-2.5">
+                <span class="text-xl">⚠️</span>
+                <span class="font-medium text-sm">{{ $errorMessage }}</span>
+            </div>
+            <button type="button" wire:click="$set('errorMessage', null)" class="text-rose-500 hover:text-rose-700 text-xs font-bold">
+                ✕
+            </button>
+        </div>
+    @endif
+
+    <!-- 📊 Live Lobby Stats Counters (Metrik Real-Time Hari Ini) -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Hari Ini</p>
+                <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ $stats['total_today'] }}</h3>
+                <span class="text-[11px] text-gray-400">Tamu Terdaftar</span>
+            </div>
+            <div class="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                👥
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-emerald-200 shadow-sm flex items-center justify-between">
+            <div>
+                <div class="flex items-center gap-1.5">
+                    <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Di Gedung</p>
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                </div>
+                <h3 class="text-2xl font-extrabold text-emerald-700 mt-0.5">{{ $stats['inside_now'] }}</h3>
+                <span class="text-[11px] text-emerald-600 font-medium">Sedang Berkunjung</span>
+            </div>
+            <div class="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                🏢
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Sudah Check-Out</p>
+                <h3 class="text-2xl font-extrabold text-gray-800 mt-0.5">{{ $stats['checked_out_today'] }}</h3>
+                <span class="text-[11px] text-gray-400">Kunjungan Selesai</span>
+            </div>
+            <div class="w-11 h-11 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                🏁
+            </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Host / Pegawai</p>
+                <h3 class="text-2xl font-extrabold text-indigo-600 mt-0.5">{{ $stats['total_employees'] }}</h3>
+                <button type="button" class="text-[11px] text-indigo-500 font-medium hover:underline flex items-center gap-0.5" wire:click="$set('showManageEmployeesModal', true)">
+                    Kelola Pegawai &rarr;
+                </button>
+            </div>
+            <div class="w-11 h-11 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                👔
+            </div>
+        </div>
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Form Check-In Tamu (Kiri) -->
@@ -191,9 +255,15 @@
                 <div>
                     <div class="flex items-center justify-between">
                         <label class="block text-xs font-semibold text-gray-700">Tujuan Bertemu (Host) <span class="text-red-500">*</span></label>
-                        <button type="button" wire:click="$set('showEmployeeModal', true)" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold hover:underline">
-                            + Tambah Pegawai
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button type="button" wire:click="$set('showEmployeeModal', true)" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold hover:underline">
+                                + Tambah
+                            </button>
+                            <span class="text-gray-300 text-xs">|</span>
+                            <button type="button" wire:click="$set('showManageEmployeesModal', true)" class="text-[11px] text-gray-500 hover:text-gray-700 font-medium hover:underline">
+                                Kelola
+                            </button>
+                        </div>
                     </div>
 
                     @if($employees->isEmpty())
@@ -222,9 +292,30 @@
                 <div>
                     <label class="block text-xs font-semibold text-gray-700">Keperluan Kunjungan <span class="text-red-500">*</span></label>
                     <input type="text" wire:model="purpose" id="input_purpose" placeholder="Contoh: Meeting Proyek" class="mt-1 w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm @error('purpose') border-red-300 @enderror">
+                    
+                    <!-- Quick Purpose Templates -->
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                        <span class="text-[10px] text-gray-400 self-center">Pilihan Cepat:</span>
+                        <button type="button" wire:click="setPurposeTemplate('Meeting Proyek')" class="text-[10px] bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 px-2 py-0.5 rounded border border-gray-200 transition">Meeting</button>
+                        <button type="button" wire:click="setPurposeTemplate('Wawancara Kerja (Interview)')" class="text-[10px] bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 px-2 py-0.5 rounded border border-gray-200 transition">Interview</button>
+                        <button type="button" wire:click="setPurposeTemplate('Pengantaran Dokumen / Paket')" class="text-[10px] bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 px-2 py-0.5 rounded border border-gray-200 transition">Dokumen</button>
+                        <button type="button" wire:click="setPurposeTemplate('Konsultasi Vendor / Audit')" class="text-[10px] bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 px-2 py-0.5 rounded border border-gray-200 transition">Vendor</button>
+                        <button type="button" wire:click="setPurposeTemplate('Maintenance IT & Fasilitas')" class="text-[10px] bg-gray-100 hover:bg-indigo-50 hover:text-indigo-600 px-2 py-0.5 rounded border border-gray-200 transition">IT / Maint</button>
+                    </div>
+
                     @error('purpose')
                         <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <!-- Safety Protocol & Digital Agreement -->
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs">
+                    <label class="flex items-start gap-2 cursor-pointer">
+                        <input type="checkbox" wire:model="agreement" checked class="mt-0.5 text-indigo-600 rounded focus:ring-indigo-500">
+                        <span class="text-gray-600 leading-snug">
+                            Tamu menyetujui <span class="font-bold text-gray-800">Tata Tertib Keamanan & Kerahasiaan Gedung</span> (Wajib mengenakan Visitor Pass di area kantor).
+                        </span>
+                    </label>
                 </div>
 
                 <!-- Tombol Submit -->
@@ -257,9 +348,39 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full font-bold">
-                        {{ $visitors->count() }} Tamu Tercatat
+                        {{ $visitors->total() }} Tamu Tercatat
                     </span>
                 </div>
+            </div>
+
+            <!-- Status Tabs & ⚡ Quick Pass Check-Out Bar -->
+            <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 mb-4">
+                <!-- Status Filter Tabs -->
+                <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
+                    <button type="button" wire:click="setStatusFilter('ALL')" class="px-3 py-1.5 rounded-lg transition {{ $statusFilter === 'ALL' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                        Semua Tamu
+                    </button>
+                    <button type="button" wire:click="setStatusFilter('INSIDE')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 {{ $statusFilter === 'INSIDE' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Di Gedung ({{ $stats['inside_now'] }})
+                    </button>
+                    <button type="button" wire:click="setStatusFilter('CHECKED_OUT')" class="px-3 py-1.5 rounded-lg transition {{ $statusFilter === 'CHECKED_OUT' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                        Selesai ({{ $stats['checked_out_today'] }})
+                    </button>
+                </div>
+
+                <!-- ⚡ Quick Check-Out Pass Scanner Input -->
+                <form wire:submit.prevent="quickCheckout" class="flex items-center gap-1.5">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-gray-400 text-xs">
+                            ⚡
+                        </span>
+                        <input type="text" wire:model="quickPassCode" placeholder="Scan / Ketik Pass ID..." class="pl-7 pr-3 py-1.5 text-xs border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-indigo-50/20 w-44">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm whitespace-nowrap">
+                        Check-Out Pass
+                    </button>
+                </form>
             </div>
 
             <!-- Form Pencarian Reaktif Livewire -->
@@ -513,6 +634,78 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+    @endif
+
+    <!-- Modal Kelola Master Data Pegawai (Daftar & Hapus) -->
+    @if($showManageEmployeesModal)
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6 border border-slate-200">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <div>
+                        <h3 class="text-base font-bold text-gray-900 flex items-center gap-1.5">
+                            <span>👥</span> Kelola Master Data Pegawai (Host)
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Daftar staf/pegawai penerima tamu yang terdaftar di sistem</p>
+                    </div>
+                    <button type="button" wire:click="$set('showManageEmployeesModal', false)" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                </div>
+
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs font-semibold text-gray-600">{{ $employees->count() }} Pegawai Terdaftar</span>
+                    <div class="flex items-center gap-2">
+                        @if($employees->isEmpty())
+                            <button type="button" wire:click="seedDefaultEmployees" class="text-xs bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1.5 rounded-lg font-semibold transition">
+                                + Buat Data Default
+                            </button>
+                        @endif
+                        <button type="button" wire:click="$set('showEmployeeModal', true)" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg font-semibold transition shadow-sm">
+                            + Tambah Pegawai
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto max-h-72 border rounded-xl">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead class="bg-gray-50 text-gray-600 font-bold border-b sticky top-0">
+                            <tr>
+                                <th class="p-2.5">Nama Pegawai</th>
+                                <th class="p-2.5">Departemen</th>
+                                <th class="p-2.5">Email Notifikasi</th>
+                                <th class="p-2.5 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y text-gray-700">
+                            @forelse($employees as $emp)
+                                <tr class="hover:bg-gray-50/75 transition">
+                                    <td class="p-2.5 font-bold text-gray-900">{{ $emp->name }}</td>
+                                    <td class="p-2.5">{{ $emp->department }}</td>
+                                    <td class="p-2.5 font-mono text-[11px] text-gray-600">{{ $emp->email }}</td>
+                                    <td class="p-2.5 text-center">
+                                        <button type="button" wire:click="deleteEmployee({{ $emp->id }})" wire:confirm="Yakin ingin menghapus pegawai {{ $emp->name }}?" class="text-rose-600 hover:text-rose-800 p-1 rounded hover:bg-rose-50 transition" title="Hapus Pegawai">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="text-center py-6 text-gray-400">
+                                        Belum ada pegawai terdaftar.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="flex justify-end mt-4 pt-3 border-t">
+                    <button type="button" wire:click="$set('showManageEmployeesModal', false)" class="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition">
+                        Selesai
+                    </button>
+                </div>
             </div>
         </div>
     @endif

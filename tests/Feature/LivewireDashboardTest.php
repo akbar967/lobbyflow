@@ -106,3 +106,85 @@ test('livewire executes 1-click check-out reactively', function () {
     expect($visitor->fresh()->status)->toBe('CHECKED_OUT')
         ->and($visitor->fresh()->durasi)->toContain('30 menit');
 });
+
+test('livewire filters visitors by status filter tabs', function () {
+    $employee = Employee::create([
+        'name' => 'Budi Santoso',
+        'department' => 'HRD',
+        'email' => 'budi@company.com',
+    ]);
+
+    $visitorInside = Visitor::create([
+        'name' => 'Tamu Sedang Di Dalam',
+        'nama_tamu' => 'Tamu Sedang Di Dalam',
+        'instansi' => 'PT Pertama',
+        'employee_id' => $employee->id,
+        'purpose' => 'Meeting',
+        'status' => 'INSIDE',
+    ]);
+
+    $visitorOut = Visitor::create([
+        'name' => 'Tamu Sudah Pulang',
+        'nama_tamu' => 'Tamu Sudah Pulang',
+        'instansi' => 'PT Kedua',
+        'employee_id' => $employee->id,
+        'purpose' => 'Kunjungan',
+        'status' => 'CHECKED_OUT',
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->assertSee('Tamu Sedang Di Dalam')
+        ->assertSee('Tamu Sudah Pulang')
+        ->call('setStatusFilter', 'INSIDE')
+        ->assertSee('Tamu Sedang Di Dalam')
+        ->assertDontSee('Tamu Sudah Pulang')
+        ->call('setStatusFilter', 'CHECKED_OUT')
+        ->assertSee('Tamu Sudah Pulang')
+        ->assertDontSee('Tamu Sedang Di Dalam')
+        ->call('setStatusFilter', 'ALL')
+        ->assertSee('Tamu Sedang Di Dalam')
+        ->assertSee('Tamu Sudah Pulang');
+});
+
+test('livewire executes fast checkout via quick pass barcode scanner', function () {
+    $employee = Employee::create([
+        'name' => 'Dewi Lestari',
+        'department' => 'Marketing',
+        'email' => 'dewi@company.com',
+    ]);
+
+    $visitor = Visitor::create([
+        'name' => 'Tamu Cepat',
+        'nama_tamu' => 'Tamu Cepat',
+        'instansi' => 'PT Kilat',
+        'employee_id' => $employee->id,
+        'purpose' => 'Drop Barang',
+        'qr_code' => 'PASS-QUICK123',
+        'status' => 'INSIDE',
+        'check_in_at' => now()->subMinutes(15),
+        'waktu_checkin' => now()->subMinutes(15),
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->set('quickPassCode', 'PASS-QUICK123')
+        ->call('quickCheckout')
+        ->assertSee('berhasil check-out')
+        ->assertSee('15 menit');
+
+    expect($visitor->fresh()->status)->toBe('CHECKED_OUT');
+});
+
+test('livewire manages employee master data including deletion', function () {
+    $employee = Employee::create([
+        'name' => 'Pegawai Uji Hapus',
+        'department' => 'Testing',
+        'email' => 'uji@company.com',
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->assertSee('Pegawai Uji Hapus')
+        ->call('deleteEmployee', $employee->id)
+        ->assertSee('berhasil dihapus');
+
+    expect(Employee::find($employee->id))->toBeNull();
+});

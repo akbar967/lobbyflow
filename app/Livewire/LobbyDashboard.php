@@ -36,7 +36,15 @@ class LobbyDashboard extends Component
 
     public string $search = '';
 
+    public string $statusFilter = 'ALL';
+
+    public string $quickPassCode = '';
+
+    public bool $agreement = true;
+
     public ?string $successMessage = null;
+
+    public ?string $errorMessage = null;
 
     // Properti Edit Tamu
     public ?int $editingVisitorId = null;
@@ -49,8 +57,10 @@ class LobbyDashboard extends Component
 
     public string $edit_purpose = '';
 
-    // Properti Tambah Pegawai (Master Data)
+    // Properti Tambah & Kelola Pegawai (Master Data)
     public bool $showEmployeeModal = false;
+
+    public bool $showManageEmployeesModal = false;
 
     public string $new_emp_name = '';
 
@@ -69,6 +79,22 @@ class LobbyDashboard extends Component
     public function updatingSearch(): void
     {
         $this->resetPage();
+    }
+
+    public function updatingStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function setStatusFilter(string $status): void
+    {
+        $this->statusFilter = $status;
+        $this->resetPage();
+    }
+
+    public function setPurposeTemplate(string $text): void
+    {
+        $this->purpose = $text;
     }
 
     protected function rules(): array
@@ -295,6 +321,47 @@ class LobbyDashboard extends Component
         }
     }
 
+    public function deleteEmployee(int $id): void
+    {
+        $employee = Employee::findOrFail($id);
+        $name = $employee->name;
+        $employee->delete();
+        $this->successMessage = "Pegawai {$name} berhasil dihapus dari master data.";
+    }
+
+    public function quickCheckout(): void
+    {
+        $code = trim($this->quickPassCode);
+        if (empty($code)) {
+            $this->errorMessage = 'Silakan masukkan atau scan Kode Pass Tamu terlebih dahulu.';
+
+            return;
+        }
+
+        // Cari visitor berdasarkan qr_code atau ID
+        $visitor = Visitor::where('qr_code', $code)
+            ->orWhere('id', ltrim($code, 'PASS-'))
+            ->orWhere('qr_code', 'like', "%{$code}%")
+            ->first();
+
+        if (! $visitor) {
+            $this->errorMessage = "Kode Pass '{$code}' tidak ditemukan di sistem.";
+            $this->quickPassCode = '';
+
+            return;
+        }
+
+        if ($visitor->status === 'CHECKED_OUT') {
+            $this->errorMessage = "Tamu {$visitor->name} ({$visitor->qr_code}) sudah melakukan check-out sebelumnya.";
+            $this->quickPassCode = '';
+
+            return;
+        }
+
+        $this->checkout($visitor->id);
+        $this->quickPassCode = '';
+    }
+
     public function previewIdCard(int $id): void
     {
         $visitor = Visitor::findOrFail($id);
@@ -424,11 +491,21 @@ class LobbyDashboard extends Component
                         ->orWhere('instansi', 'like', "%{$search}%");
                 });
             })
+            ->when($this->statusFilter !== 'ALL', function ($query) {
+                $query->where('status', $this->statusFilter);
+            })
             ->latest()
             ->paginate(10);
 
         $employees = Employee::orderBy('name')->get();
 
-        return view('livewire.lobby-dashboard', compact('visitors', 'employees'));
+        $stats = [
+            'total_today' => Visitor::whereDate('created_at', today())->count(),
+            'inside_now' => Visitor::where('status', 'INSIDE')->count(),
+            'checked_out_today' => Visitor::whereDate('created_at', today())->where('status', 'CHECKED_OUT')->count(),
+            'total_employees' => $employees->count(),
+        ];
+
+        return view('livewire.lobby-dashboard', compact('visitors', 'employees', 'stats'));
     }
 }
