@@ -42,6 +42,8 @@ class LobbyDashboard extends Component
 
     public bool $agreement = true;
 
+    public bool $is_preregistered = false;
+
     public ?string $successMessage = null;
 
     public ?string $errorMessage = null;
@@ -163,6 +165,9 @@ class LobbyDashboard extends Component
             $idCardPath = $this->id_card_image->store('ktp_cards', 'public');
         }
 
+        $status = $this->is_preregistered ? 'SCHEDULED' : 'INSIDE';
+        $checkInTime = $this->is_preregistered ? null : $now;
+
         $visitor = Visitor::create([
             'name' => $this->name,
             'nama_tamu' => $this->name,
@@ -172,13 +177,13 @@ class LobbyDashboard extends Component
             'purpose' => $this->purpose,
             'keperluan' => $this->purpose,
             'qr_code' => $qrCodePass,
-            'status' => 'INSIDE',
-            'check_in_at' => $now,
-            'waktu_checkin' => $now,
+            'status' => $status,
+            'check_in_at' => $checkInTime,
+            'waktu_checkin' => $checkInTime,
             'id_card_image' => $idCardPath,
         ]);
 
-        if ($employee && ! empty($employee->email)) {
+        if (! $this->is_preregistered && $employee && ! empty($employee->email)) {
             try {
                 Mail::to($employee->email)->send(new VisitorArrivedMail($visitor, $employee));
             } catch (Throwable $e) {
@@ -186,9 +191,33 @@ class LobbyDashboard extends Component
             }
         }
 
-        $this->reset(['name', 'instansi', 'employee_id', 'purpose', 'id_card_image']);
+        $this->reset(['name', 'instansi', 'employee_id', 'purpose', 'id_card_image', 'is_preregistered']);
 
-        $this->successMessage = 'Tamu berhasil check-in! Notifikasi email telah dikirim ke host.';
+        $this->successMessage = $status === 'SCHEDULED'
+            ? 'Pra-Registrasi Tamu berhasil dijadwalkan! Tamu dapat konfirmasi tiba saat sampai di lobi.'
+            : 'Tamu berhasil check-in! Notifikasi email telah dikirim ke host.';
+    }
+
+    public function confirmArrival(int $id): void
+    {
+        $visitor = Visitor::findOrFail($id);
+        $now = now();
+
+        $visitor->update([
+            'status' => 'INSIDE',
+            'check_in_at' => $now,
+            'waktu_checkin' => $now,
+        ]);
+
+        if ($visitor->employee && ! empty($visitor->employee->email)) {
+            try {
+                Mail::to($visitor->employee->email)->send(new VisitorArrivedMail($visitor, $visitor->employee));
+            } catch (Throwable $e) {
+                Log::warning('Gagal mengirim email notifikasi ke host: '.$e->getMessage());
+            }
+        }
+
+        $this->successMessage = "Tamu {$visitor->name} telah dikonfirmasi tiba di lobi!";
     }
 
     public function simulateAiScan(): void
@@ -502,6 +531,7 @@ class LobbyDashboard extends Component
         $stats = [
             'total_today' => Visitor::whereDate('created_at', today())->count(),
             'inside_now' => Visitor::where('status', 'INSIDE')->count(),
+            'scheduled' => Visitor::where('status', 'SCHEDULED')->count(),
             'checked_out_today' => Visitor::whereDate('created_at', today())->where('status', 'CHECKED_OUT')->count(),
             'total_employees' => $employees->count(),
         ];

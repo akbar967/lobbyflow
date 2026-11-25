@@ -10,7 +10,11 @@ use Illuminate\Support\Facades\Route;
 // Autentikasi (Livewire Login & Quick Access)
 Route::get('/login', Login::class)->name('login');
 Route::post('/login', [Login::class, 'handleLoginPost'])->name('login.post');
-Route::get('/login/quick/{role}', [Login::class, 'handleQuickLogin'])->name('login.quick');
+if (app()->environment('local', 'testing')) {
+    Route::match(['get', 'post'], '/login/quick/{role}', [Login::class, 'handleQuickLogin'])->name('login.quick');
+} else {
+    Route::post('/login/quick/{role}', [Login::class, 'handleQuickLogin'])->name('login.quick');
+}
 Route::post('/logout', [Login::class, 'handleLogout'])->name('logout');
 
 // Halaman Resepsionis & Operasional Tamu (Livewire Full-Page)

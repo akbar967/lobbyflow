@@ -318,20 +318,29 @@
                     </label>
                 </div>
 
+                <!-- Pra-Registrasi Option -->
+                <div class="p-2.5 bg-indigo-50/60 border border-indigo-100 rounded-lg text-xs">
+                    <label class="flex items-center gap-2 cursor-pointer font-semibold text-indigo-900">
+                        <input type="checkbox" wire:model.live="is_preregistered" class="rounded text-indigo-600 focus:ring-indigo-500">
+                        <span>📅 Pra-Registrasi (Jadwalkan Kunjungan)</span>
+                    </label>
+                    <p class="text-[10px] text-gray-500 mt-0.5 ml-5">Tamu didaftarkan lebih awal dan dapat dikonfirmasi saat tiba di lobi.</p>
+                </div>
+
                 <!-- Tombol Submit -->
                 <button type="submit" wire:loading.attr="disabled" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-semibold transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50">
                     <span wire:loading.remove wire:target="save" class="flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
                         </svg>
-                        Simpan & Check-In
+                        {{ $is_preregistered ? 'Jadwalkan Pra-Registrasi' : 'Simpan & Check-In' }}
                     </span>
                     <span wire:loading wire:target="save" class="flex items-center gap-2 text-sm">
                         <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                         </svg>
-                        Memproses Check-In...
+                        Memproses...
                     </span>
                 </button>
             </form>
@@ -356,13 +365,17 @@
             <!-- Status Tabs & ⚡ Quick Pass Check-Out Bar -->
             <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 mb-4">
                 <!-- Status Filter Tabs -->
-                <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
+                <div class="flex flex-wrap items-center gap-1 bg-gray-100 p-1 rounded-xl text-xs font-semibold">
                     <button type="button" wire:click="setStatusFilter('ALL')" class="px-3 py-1.5 rounded-lg transition {{ $statusFilter === 'ALL' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
                         Semua Tamu
                     </button>
                     <button type="button" wire:click="setStatusFilter('INSIDE')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 {{ $statusFilter === 'INSIDE' ? 'bg-white text-emerald-700 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         Di Gedung ({{ $stats['inside_now'] }})
+                    </button>
+                    <button type="button" wire:click="setStatusFilter('SCHEDULED')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 {{ $statusFilter === 'SCHEDULED' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
+                        <span>📅</span>
+                        Dijadwalkan ({{ $stats['scheduled'] }})
                     </button>
                     <button type="button" wire:click="setStatusFilter('CHECKED_OUT')" class="px-3 py-1.5 rounded-lg transition {{ $statusFilter === 'CHECKED_OUT' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
                         Selesai ({{ $stats['checked_out_today'] }})
@@ -454,7 +467,13 @@
 
                                 <!-- Label Status Tag (UI/UX) -->
                                 <td class="py-3.5 pr-2">
-                                    @if($v->status === 'INSIDE')
+                                    @if($v->status === 'SCHEDULED')
+                                        <!-- Biru: Pra-Registrasi / Dijadwalkan -->
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 text-blue-800 border border-blue-200 rounded-full text-xs font-semibold">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                            Dijadwalkan
+                                        </span>
+                                    @elseif($v->status === 'INSIDE')
                                         <!-- Hijau: Di Dalam Gedung -->
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-full text-xs font-semibold">
                                             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -486,8 +505,16 @@
                                             <span class="hidden sm:inline">Cetak</span>
                                         </a>
 
-                                        <!-- Tombol Check-Out 1-Klik Livewire dengan Dialog Konfirmasi -->
-                                        @if($v->status === 'INSIDE')
+                                        @if($v->status === 'SCHEDULED')
+                                            <!-- Tombol Konfirmasi Kedatangan (Pra-Registrasi) -->
+                                            <button type="button" wire:click="confirmArrival({{ $v->id }})" class="inline-flex items-center gap-1 text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white px-2 py-1.5 rounded-lg border border-emerald-200 hover:border-emerald-600 font-semibold transition shadow-sm" title="Konfirmasi Tamu Tiba di Gedung">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                <span>Tiba</span>
+                                            </button>
+                                        @elseif($v->status === 'INSIDE')
+                                            <!-- Tombol Check-Out 1-Klik Livewire dengan Dialog Konfirmasi -->
                                             <button type="button" wire:click="checkout({{ $v->id }})" wire:confirm="Konfirmasi check-out untuk tamu {{ $v->name }}?" wire:loading.attr="disabled" class="inline-flex items-center gap-1 text-xs bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-2 py-1.5 rounded-lg border border-red-200 hover:border-red-600 font-medium transition shadow-sm disabled:opacity-50" title="Check-Out Tamu">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

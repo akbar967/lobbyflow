@@ -188,3 +188,31 @@ test('livewire manages employee master data including deletion', function () {
 
     expect(Employee::find($employee->id))->toBeNull();
 });
+
+test('livewire supports visitor pre-registration and arrival confirmation', function () {
+    $employee = Employee::create([
+        'name' => 'Ferry Gunawan',
+        'department' => 'Legal',
+        'email' => 'ferry@company.com',
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->set('name', 'Tamu Terjadwal')
+        ->set('instansi', 'PT Jadwal Sukses')
+        ->set('employee_id', $employee->id)
+        ->set('purpose', 'Tanda Tangan MoU')
+        ->set('is_preregistered', true)
+        ->call('save')
+        ->assertSee('Pra-Registrasi Tamu berhasil dijadwalkan')
+        ->assertSee('Dijadwalkan');
+
+    $visitor = Visitor::where('name', 'Tamu Terjadwal')->first();
+    expect($visitor->status)->toBe('SCHEDULED');
+
+    // Resepsionis mengonfirmasi kedatangan saat tamu tiba di gedung
+    Livewire::test(LobbyDashboard::class)
+        ->call('confirmArrival', $visitor->id)
+        ->assertSee('telah dikonfirmasi tiba di lobi');
+
+    expect($visitor->fresh()->status)->toBe('INSIDE');
+});

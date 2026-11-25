@@ -3,7 +3,7 @@
         <!-- Brand Header -->
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center mb-3">
-                <img src="{{ asset('favicon.svg') }}" alt="LobbyFlow Logo" class="w-14 h-14 rounded-2xl shadow-lg">
+                <img src="{{ asset('logo.svg') }}" alt="LobbyFlow Logo" class="w-14 h-14 rounded-2xl shadow-lg">
             </div>
             <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">LobbyFlow Enterprise</h1>
             <p class="text-xs text-slate-500 mt-1">Sistem Resepsionis Pintar & Pemantauan Tamu Multi-Role &bull; Powered by Livewire</p>
@@ -69,7 +69,7 @@
             </div>
 
             <!-- Quick Login Buttons untuk Uji Coba Dosen -->
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <a href="{{ route('login.quick', 'admin') }}" wire:click.prevent="quickLogin('admin')" class="flex flex-col items-center justify-center p-3 rounded-xl border border-indigo-200 bg-indigo-50/50 hover:bg-indigo-100/60 transition group text-center cursor-pointer">
                     <span class="text-base mb-1">👑</span>
                     <span class="text-xs font-bold text-indigo-900 group-hover:text-indigo-950">Masuk sbg Admin</span>

@@ -55,7 +55,7 @@ test('stores a new visitor, generates qr code pass, and dispatches email notific
     expect($visitor->qr_code)->not->toBeNull()
         ->and($visitor->qr_code)->toContain('PASS-');
 
-    Mail::assertSent(VisitorArrivedMail::class, function ($mail) use ($employee, $visitor) {
+    Mail::assertQueued(VisitorArrivedMail::class, function ($mail) use ($employee, $visitor) {
         return $mail->hasTo('budi@company.com')
             && $mail->visitor->id === $visitor->id
             && $mail->employee->id === $employee->id;
