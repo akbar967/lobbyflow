@@ -90,6 +90,9 @@ class LobbyDashboard extends Component
     // Properti Roster Evakuasi Darurat (K3 / HSE)
     public bool $showEvacuationModal = false;
 
+    // Properti Modal Direktori 12 Fitur Unggulan
+    public bool $showFeaturesModal = false;
+
     public function mount(): void
     {
         $this->search = (string) request()->query('search', '');
@@ -420,6 +423,16 @@ class LobbyDashboard extends Component
     public function closeEvacuationModal(): void
     {
         $this->showEvacuationModal = false;
+    }
+
+    public function openFeaturesModal(): void
+    {
+        $this->showFeaturesModal = true;
+    }
+
+    public function closeFeaturesModal(): void
+    {
+        $this->showFeaturesModal = false;
     }
 
     /**

@@ -332,3 +332,13 @@ test('livewire dispatches play-chime event on visitor save and checkout', functi
         ->call('save')
         ->assertDispatched('play-chime');
 });
+
+test('livewire opens and closes features directory modal', function () {
+    Livewire::test(LobbyDashboard::class)
+        ->call('openFeaturesModal')
+        ->assertSee('Direktori 12 Fitur Unggulan Sistem')
+        ->assertSee('Smart Scan AI (Vision OCR)')
+        ->assertSee('Quick Pass Barcode Scanner')
+        ->call('closeFeaturesModal')
+        ->assertDontSee('Katalog modul dan kapabilitas sistem LobbyFlow');
+});

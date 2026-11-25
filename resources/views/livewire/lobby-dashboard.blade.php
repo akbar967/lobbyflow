@@ -118,34 +118,104 @@
         </div>
     @endif
 
-    <!-- ✨ AI Executive Summary Preview Card -->
-    <div class="mb-6 bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 rounded-xl p-4 text-white shadow-sm border border-indigo-700/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div class="flex items-center gap-3">
-            <div class="p-2.5 bg-white/10 rounded-lg text-xl border border-white/15">
-                ✨
-            </div>
-            <div>
-                <div class="flex items-center gap-2">
-                    <h3 class="text-sm font-bold tracking-wide">AI Executive Summary</h3>
-                    <span class="text-[10px] bg-indigo-500/40 text-indigo-200 px-2 py-0.5 rounded-full border border-indigo-400/30">Live Analysis</span>
+    <!-- 🚀 Pusat Fitur Unggulan & Quick Action Hub (Enterprise Feature Hub) -->
+    <div class="mb-6 bg-white rounded-2xl border border-indigo-100 shadow-sm overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 p-4 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl border border-white/20 shadow-inner">
+                    ⚡
                 </div>
-                <p class="text-xs text-indigo-100 mt-0.5">
-                    Sistem AI aktif memantau arus kedatangan tamu, mendeteksi mitra korporasi teratas, dan menjaga tingkat kepatuhan check-out secara real-time.
-                </p>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-sm font-extrabold tracking-wide uppercase">Pusat Fitur Unggulan (Feature Showcase Hub)</h3>
+                        <span class="text-[10px] bg-emerald-500/30 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 animate-pulse">12 Fitur Siap Pakai</span>
+                    </div>
+                    <p class="text-xs text-indigo-100 mt-0.5">
+                        Fitur-fitur otomatis sistem LobbyFlow — klik kartu aksi cepat untuk langsung mencoba atau mengeksekusi fitur
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" wire:click="openFeaturesModal" class="inline-flex items-center gap-1.5 text-xs font-bold bg-white text-indigo-900 hover:bg-indigo-50 px-3.5 py-2 rounded-xl transition shadow-md whitespace-nowrap">
+                    <span>✨ Direktori 12 Fitur Lengkap</span>
+                    <span>&rarr;</span>
+                </button>
+                @if(Auth::user()?->role === 'admin')
+                    <a href="{{ route('reports.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 text-white px-3.5 py-2 rounded-xl border border-white/20 transition whitespace-nowrap">
+                        <span>📊 Analitik & PDF</span>
+                    </a>
+                @endif
             </div>
         </div>
-        @if(Auth::user()?->role === 'admin')
-            <a href="{{ route('reports.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 text-white px-3.5 py-1.5 rounded-lg border border-white/20 transition whitespace-nowrap">
-                <span>Buka Laporan Lengkap</span>
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-            </a>
-        @else
-            <span class="inline-flex items-center gap-1.5 text-xs text-indigo-200 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 whitespace-nowrap font-medium" title="Hanya Admin yang dapat membuka halaman Laporan">
-                <span>🔒 Khusus Admin</span>
-            </span>
-        @endif
+
+        <!-- 6 Interactive Feature Action Cards -->
+        <div class="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 bg-slate-50/60">
+            <!-- 1. Smart Scan OCR -->
+            <button type="button" wire:click="simulateAiScan" class="p-3 bg-white hover:bg-purple-50/60 rounded-xl border border-gray-200 hover:border-purple-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-base font-bold shadow-inner">📷</span>
+                    <span class="text-[9px] bg-purple-100 text-purple-800 font-extrabold px-1.5 py-0.5 rounded uppercase">AI Vision</span>
+                </div>
+                <h4 class="text-xs font-bold text-gray-900 group-hover:text-purple-700">Smart Scan OCR</h4>
+                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Ekstraksi nama KTP otomatis</p>
+                <span class="mt-2 inline-flex items-center text-[10px] text-purple-600 font-bold">Coba Scan AI &rarr;</span>
+            </button>
+
+            <!-- 2. Quick Pass Scanner -->
+            <button type="button" onclick="const el = document.getElementById('quick-pass-input'); if(el) { el.focus(); el.scrollIntoView({behavior:'smooth'}); }" class="p-3 bg-white hover:bg-amber-50/60 rounded-xl border border-gray-200 hover:border-amber-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-base font-bold shadow-inner">⚡</span>
+                    <span class="text-[9px] bg-amber-100 text-amber-800 font-extrabold px-1.5 py-0.5 rounded uppercase">Barcode/QR</span>
+                </div>
+                <h4 class="text-xs font-bold text-gray-900 group-hover:text-amber-700">Check-Out Cepat</h4>
+                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Scan kode pass 1-detik</p>
+                <span class="mt-2 inline-flex items-center text-[10px] text-amber-600 font-bold">Fokus Scan &rarr;</span>
+            </button>
+
+            <!-- 3. Roster Evakuasi K3 -->
+            <button type="button" wire:click="openEvacuationModal" class="p-3 bg-white hover:bg-rose-50/60 rounded-xl border border-gray-200 hover:border-rose-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-base font-bold shadow-inner">🚨</span>
+                    <span class="text-[9px] bg-rose-100 text-rose-800 font-extrabold px-1.5 py-0.5 rounded uppercase">K3 Safety</span>
+                </div>
+                <h4 class="text-xs font-bold text-gray-900 group-hover:text-rose-700">Evakuasi K3</h4>
+                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Roster keselamatan tamu</p>
+                <span class="mt-2 inline-flex items-center text-[10px] text-rose-600 font-bold">Buka Roster &rarr;</span>
+            </button>
+
+            <!-- 4. Notifikasi WhatsApp -->
+            <button type="button" wire:click="generateDemoVisitors" class="p-3 bg-white hover:bg-emerald-50/60 rounded-xl border border-gray-200 hover:border-emerald-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-base font-bold shadow-inner">💬</span>
+                    <span class="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded uppercase">WA Alert</span>
+                </div>
+                <h4 class="text-xs font-bold text-gray-900 group-hover:text-emerald-700">WhatsApp Host</h4>
+                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Kirim pesan instan tamu</p>
+                <span class="mt-2 inline-flex items-center text-[10px] text-emerald-600 font-bold">Simulasi Lobi &rarr;</span>
+            </button>
+
+            <!-- 5. Ekspor Laporan CSV -->
+            <button type="button" wire:click="exportTodayCsv" class="p-3 bg-white hover:bg-teal-50/60 rounded-xl border border-gray-200 hover:border-teal-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-base font-bold shadow-inner">📥</span>
+                    <span class="text-[9px] bg-teal-100 text-teal-800 font-extrabold px-1.5 py-0.5 rounded uppercase">Excel/CSV</span>
+                </div>
+                <h4 class="text-xs font-bold text-gray-900 group-hover:text-teal-700">Ekspor Hari Ini</h4>
+                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Unduh rekapitulasi data</p>
+                <span class="mt-2 inline-flex items-center text-[10px] text-teal-600 font-bold">Unduh File &rarr;</span>
+            </button>
+
+            <!-- 6. Kelola Pegawai -->
+            <button type="button" wire:click="$set('showManageEmployeesModal', true)" class="p-3 bg-white hover:bg-indigo-50/60 rounded-xl border border-gray-200 hover:border-indigo-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-base font-bold shadow-inner">👔</span>
+                    <span class="text-[9px] bg-indigo-100 text-indigo-800 font-extrabold px-1.5 py-0.5 rounded uppercase">Master Data</span>
+                </div>
+                <h4 class="text-xs font-bold text-gray-900 group-hover:text-indigo-700">Data Pegawai</h4>
+                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Kelola direktori host</p>
+                <span class="mt-2 inline-flex items-center text-[10px] text-indigo-600 font-bold">Kelola Staf &rarr;</span>
+            </button>
+        </div>
     </div>
 
     <!-- Pesan Sukses & Error -->
@@ -234,22 +304,23 @@
 
             <form wire:submit="save" class="space-y-4">
                 <!-- ✨ Smart Scan Dropzone (KTP / Kartu Nama) -->
-                <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-xs font-bold text-gray-700 flex items-center gap-1.5">
-                            <span class="text-indigo-600">✨</span> Smart Scan (KTP / Kartu Nama)
+                <div class="bg-gradient-to-r from-purple-50 via-indigo-50/50 to-purple-50 p-3 rounded-xl border border-purple-200 shadow-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                            <span class="p-1 bg-purple-600 text-white rounded text-[10px]">AI</span>
+                            <span>Smart Scan (KTP / Kartu Nama)</span>
                         </label>
-                        <button type="button" wire:click="simulateAiScan" class="text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-700 px-2.5 py-0.5 rounded-full font-bold transition flex items-center gap-1" title="Isi form otomatis dengan simulasi AI">
-                            <span>✨ Demo Scan</span>
+                        <button type="button" wire:click="simulateAiScan" class="text-[10px] bg-purple-600 hover:bg-purple-700 text-white px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 shadow-sm" title="Uji coba ekstraksi data KTP otomatis dengan simulasi AI">
+                            <span>✨ Coba Demo Scan</span>
                         </button>
                     </div>
 
-                    <div id="dropzone" class="border-2 border-dashed border-indigo-200 hover:border-indigo-400 rounded-xl p-3 text-center cursor-pointer bg-indigo-50/30 hover:bg-indigo-50/60 transition relative">
+                    <div id="dropzone" class="border-2 border-dashed border-purple-300 hover:border-purple-500 rounded-xl p-3 text-center cursor-pointer bg-white/80 hover:bg-white transition relative">
                         <input type="file" wire:model="id_card_image" id="id_card_input" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                         <div id="dropzone_prompt" class="{{ $id_card_image ? 'hidden' : '' }} space-y-1">
-                            <div class="text-2xl text-indigo-500">📷</div>
-                            <p class="text-xs font-medium text-gray-700">Drop foto KTP / Kartu Nama di sini</p>
-                            <p class="text-[10px] text-gray-400">atau klik untuk unggah gambar</p>
+                            <div class="text-2xl text-purple-600">📷</div>
+                            <p class="text-xs font-bold text-gray-700">Drop foto KTP / Kartu Nama di sini</p>
+                            <p class="text-[10px] text-gray-400">AI otomatis mengekstrak Nama & Instansi ke form</p>
                         </div>
 
                         @if($id_card_image)
@@ -443,16 +514,16 @@
                     </button>
                 </div>
 
-                <!-- ⚡ Quick Check-Out Pass Scanner Input -->
-                <form wire:submit.prevent="quickCheckout" class="flex items-center gap-1.5">
+                <!-- ⚡ Quick Check-Out Pass Scanner Input Console -->
+                <form wire:submit.prevent="quickCheckout" class="flex items-center gap-1.5 bg-gradient-to-r from-amber-50 to-orange-50 p-1.5 rounded-xl border border-amber-200 shadow-sm">
                     <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-gray-400 text-xs">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none text-amber-600 text-xs font-bold">
                             ⚡
                         </span>
-                        <input type="text" wire:model="quickPassCode" placeholder="Scan / Ketik Pass ID..." class="pl-7 pr-3 py-1.5 text-xs border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-indigo-50/20 w-44">
+                        <input type="text" id="quick-pass-input" wire:model="quickPassCode" placeholder="Scan Barcode / Pass..." class="pl-7 pr-3 py-1.5 text-xs border border-amber-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-white w-44 font-mono font-medium">
                     </div>
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shadow-sm whitespace-nowrap">
-                        Check-Out Pass
+                    <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition shadow-sm whitespace-nowrap flex items-center gap-1">
+                        <span>Check-Out</span>
                     </button>
                 </form>
             </div>
@@ -972,6 +1043,187 @@
                     <span>Protokol Tanggap Darurat &bull; Tanggal: {{ today()->format('d/m/Y') }}</span>
                     <button type="button" wire:click="closeEvacuationModal" class="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition">
                         Tutup Roster
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    @if($showFeaturesModal)
+        <!-- Modal Direktori 12 Fitur Unggulan Sistem LobbyFlow -->
+        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border border-indigo-200">
+                <!-- Header Direktori Fitur -->
+                <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white p-5 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl shadow-inner">
+                            ✨
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-extrabold tracking-wide uppercase">Direktori 12 Fitur Unggulan Sistem</h3>
+                                <span class="text-[10px] bg-emerald-400/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/40">100% Siap Diuji</span>
+                            </div>
+                            <p class="text-xs text-indigo-100">Katalog modul dan kapabilitas sistem LobbyFlow hasil revisi & pengujian</p>
+                        </div>
+                    </div>
+                    <button type="button" wire:click="closeFeaturesModal" class="text-white/80 hover:text-white font-bold text-xl px-2">✕</button>
+                </div>
+
+                <!-- Konten Daftar 12 Fitur -->
+                <div class="p-6 overflow-y-auto space-y-4 text-xs text-gray-700">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        <!-- Fitur 1 -->
+                        <div class="p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-indigo-50 rounded-lg">🔑</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-gray-900 text-sm">Autentikasi & Quick Login</h4>
+                                    <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">✓ PASS</span>
+                                </div>
+                                <p class="text-gray-500 mt-1">Dual role (Admin & Resepsionis) dengan tombol 1-klik Quick Login yang tahan terhadap database kosong (auto-create demo account).</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 2 -->
+                        <div class="p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-purple-50 rounded-lg">🛡️</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-gray-900 text-sm">Role-Based Access Control</h4>
+                                    <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">✓ PASS</span>
+                                </div>
+                                <p class="text-gray-500 mt-1">Middleware <code>EnsureUserIsAdmin</code> melindungi halaman laporan eksekutif dari akses non-admin dengan pesan flash informatif.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 3 -->
+                        <div class="p-3.5 rounded-xl border border-purple-200 bg-purple-50/40 shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-purple-100 rounded-lg">📸</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-purple-950 text-sm">Smart Scan AI (Vision OCR)</h4>
+                                    <span class="text-[10px] bg-purple-600 text-white font-bold px-2 py-0.5 rounded-full">✨ AI VISION</span>
+                                </div>
+                                <p class="text-gray-600 mt-1">Ekstraksi otomatis nama tamu & asal instansi dari foto KTP atau kartu nama via Vision AI engine dan regex fallback cerdas.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 4 -->
+                        <div class="p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-indigo-50 rounded-lg">✍️</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-gray-900 text-sm">Form Check-In Interaktif</h4>
+                                    <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">✓ REAKTIF</span>
+                                </div>
+                                <p class="text-gray-500 mt-1">Dilengkapi template keperluan instan (Meeting, Vendor, dsb.), checkbox protokol K3, dan mode Pra-Registrasi kunjungan.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 5 -->
+                        <div class="p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-blue-50 rounded-lg">🔍</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-gray-900 text-sm">Pencarian Live Real-Time</h4>
+                                    <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">✓ LIVEWIRE</span>
+                                </div>
+                                <p class="text-gray-500 mt-1">Penyaringan instan daftar tamu berdasarkan nama atau instansi secara live tanpa refresh halaman (debounce 300ms).</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 6 -->
+                        <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-amber-100 rounded-lg">⚡</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-amber-950 text-sm">Quick Pass Barcode Scanner</h4>
+                                    <span class="text-[10px] bg-amber-600 text-white font-bold px-2 py-0.5 rounded-full">⚡ 1-DETIK</span>
+                                </div>
+                                <p class="text-gray-600 mt-1">Console scanner untuk check-out cepat tamu via scan barcode atau ketik ID pass tamu tanpa perlu mencari manual di tabel.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 7 -->
+                        <div class="p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-rose-50 rounded-lg">⏱️</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-gray-900 text-sm">1-Klik Check-Out & Idempotency</h4>
+                                    <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">✓ AMAN</span>
+                                </div>
+                                <p class="text-gray-500 mt-1">Konfirmasi dialog <code>wire:confirm</code>, kalkulasi otomatis durasi kunjungan (jam & menit), serta proteksi data tamper-proof.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 8 -->
+                        <div class="p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-indigo-50 rounded-lg">🏷️</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-gray-900 text-sm">Cetak ID Badge & QR SVG</h4>
+                                    <span class="text-[10px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-full">✓ SVG QR</span>
+                                </div>
+                                <p class="text-gray-500 mt-1">Kartu identitas pengunjung resmi dengan kode QR SVG tajam, foto identitas, dan CSS khusus print background graphics.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 9 -->
+                        <div class="p-3.5 rounded-xl border border-gray-200 bg-white shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-emerald-50 rounded-lg">📧</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-gray-900 text-sm">Notifikasi Email Host Otomatis</h4>
+                                    <span class="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">✓ QUEUED</span>
+                                </div>
+                                <p class="text-gray-500 mt-1">Pengiriman email otomatis ke staf yang dituju dengan implementasi <code>ShouldQueue</code> agar respons antarmuka tetap instan.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 10 -->
+                        <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/40 shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-emerald-100 rounded-lg">💬</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-emerald-950 text-sm">Notifikasi WhatsApp Instan</h4>
+                                    <span class="text-[10px] bg-emerald-600 text-white font-bold px-2 py-0.5 rounded-full">💬 INSTANT</span>
+                                </div>
+                                <p class="text-gray-600 mt-1">Pratinjau bubble chat WhatsApp dan tombol 1-klik untuk membuka WhatsApp Web/Desktop dan mengabari pegawai penerima.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 11 -->
+                        <div class="p-3.5 rounded-xl border border-rose-200 bg-rose-50/40 shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-rose-100 rounded-lg">🚨</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-rose-950 text-sm">Roster Evakuasi Darurat K3</h4>
+                                    <span class="text-[10px] bg-rose-600 text-white font-bold px-2 py-0.5 rounded-full">🚨 SAFETY</span>
+                                </div>
+                                <p class="text-gray-600 mt-1">Protokol darurat K3/HSE untuk mendata seluruh tamu yang sedang berada di dalam gedung dan mencetak daftar hadir evakuasi.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 12 -->
+                        <div class="p-3.5 rounded-xl border border-teal-200 bg-teal-50/40 shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-teal-100 rounded-lg">📥</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-teal-950 text-sm">Ekspor Excel CSV & Cetak PDF</h4>
+                                    <span class="text-[10px] bg-teal-600 text-white font-bold px-2 py-0.5 rounded-full">📊 EXCEL/PDF</span>
+                                </div>
+                                <p class="text-gray-600 mt-1">Stream CSV dengan UTF-8 BOM untuk kompatibilitas Microsoft Excel, serta cetak dokumen PDF rekap resmi dengan kop surat.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Modal Fitur -->
+                <div class="p-4 bg-gray-50 border-t flex justify-between items-center text-xs">
+                    <span class="text-gray-500 font-medium">LobbyFlow Enterprise Visitor Management System &bull; Versi 2.0</span>
+                    <button type="button" wire:click="closeFeaturesModal" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition shadow-sm">
+                        Tutup Direktori
                     </button>
                 </div>
             </div>
