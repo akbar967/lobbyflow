@@ -108,7 +108,7 @@
                     <h2 class="text-sm font-bold text-gray-900">📈 Tren Kunjungan Harian (Bulan Ini)</h2>
                     <p class="text-xs text-gray-500">Volume tamu yang datang setiap hari di bulan {{ \Carbon\Carbon::parse($selectedMonth . '-01')->format('F Y') }}</p>
                 </div>
-                <span class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-medium">Line Chart</span>
+                <span class="text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-full font-medium">Grafik Garis</span>
             </div>
             <div class="h-64" wire:ignore>
                 <canvas id="dailyTrendChart"></canvas>
@@ -123,7 +123,7 @@
                         <h2 class="text-sm font-bold text-gray-900">🎯 Distribusi Status Tamu</h2>
                         <p class="text-xs text-gray-500">Perbandingan tamu aktif vs check-out</p>
                     </div>
-                    <span class="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">Doughnut</span>
+                    <span class="text-xs bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full font-medium">Grafik Donat</span>
                 </div>
                 <div class="h-48 relative flex items-center justify-center" wire:ignore>
                     <canvas id="statusChart"></canvas>
@@ -148,7 +148,7 @@
                     <h2 class="text-sm font-bold text-gray-900">🏢 Top 5 Mitra Korporasi Teraktif</h2>
                     <p class="text-xs text-gray-500">Instansi / perusahaan dengan frekuensi kunjungan tertinggi</p>
                 </div>
-                <span class="text-xs bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full font-medium">Bar Chart</span>
+                <span class="text-xs bg-purple-50 text-purple-700 px-2.5 py-1 rounded-full font-medium">Grafik Batang</span>
             </div>
             <div class="h-56" wire:ignore>
                 <canvas id="instansiChart"></canvas>
@@ -265,9 +265,15 @@
                 </tbody>
             </table>
         </div>
+
+        @if($visitors->hasPages())
+            <div class="mt-4 pt-3 border-t">
+                {{ $visitors->links() }}
+            </div>
+        @endif
     </div>
 
-    <!-- Chart.js Initialization -->
+    <!-- Chart.js Initialization & Reactive Listener -->
     <script>
         function renderCharts() {
             // 1. Daily Trend Chart (Line)
@@ -393,5 +399,23 @@
 
         document.addEventListener('DOMContentLoaded', renderCharts);
         document.addEventListener('livewire:navigated', renderCharts);
+
+        window.addEventListener('charts-updated', event => {
+            const data = Array.isArray(event.detail) ? event.detail[0] : event.detail;
+            if (window.myDailyChart && data.dates && data.counts) {
+                window.myDailyChart.data.labels = data.dates.map(d => 'Tgl ' + d);
+                window.myDailyChart.data.datasets[0].data = data.counts;
+                window.myDailyChart.update();
+            }
+            if (window.myStatusChart && (data.inside !== undefined || data.checked_out !== undefined)) {
+                window.myStatusChart.data.datasets[0].data = [data.inside, data.checked_out];
+                window.myStatusChart.update();
+            }
+            if (window.myInstansiChart && data.instansiLabels) {
+                window.myInstansiChart.data.labels = data.instansiLabels.length > 0 ? data.instansiLabels : ['Belum ada data'];
+                window.myInstansiChart.data.datasets[0].data = data.instansiCounts.length > 0 ? data.instansiCounts : [0];
+                window.myInstansiChart.update();
+            }
+        });
     </script>
 </div>

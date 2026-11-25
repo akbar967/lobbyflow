@@ -10,12 +10,15 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Layout('components.layouts.app')]
 #[Title('Laporan Bulanan Tamu - LobbyFlow')]
 class ReportDashboard extends Component
 {
+    use WithPagination;
+
     public string $selectedMonth = '';
 
     public array $stats = [
@@ -39,11 +42,6 @@ class ReportDashboard extends Component
     public function mount(): void
     {
         $this->selectedMonth = (string) request()->query('month', now()->format('Y-m'));
-        $this->loadReportData();
-    }
-
-    public function updatedSelectedMonth(): void
-    {
         $this->loadReportData();
     }
 
@@ -107,11 +105,27 @@ class ReportDashboard extends Component
 
         $this->instansiLabels = $top5Instansi->keys()->toArray();
         $this->instansiCounts = $top5Instansi->values()->toArray();
+
+        // Dispatch browser event agar Chart.js langsung mengupdate grafik reaktif tanpa reload
+        $this->dispatch('charts-updated', [
+            'dates' => $this->dailyDates,
+            'counts' => $this->dailyCounts,
+            'inside' => $this->stats['inside'],
+            'checked_out' => $this->stats['checked_out'],
+            'instansiLabels' => $this->instansiLabels,
+            'instansiCounts' => $this->instansiCounts,
+        ]);
+    }
+
+    public function updatedSelectedMonth(): void
+    {
+        $this->resetPage();
+        $this->loadReportData();
     }
 
     public function exportExcel(): StreamedResponse
     {
-        return self::handleExportExcel(request());
+        return self::streamCsv($this->selectedMonth);
     }
 
     /**
@@ -120,6 +134,12 @@ class ReportDashboard extends Component
     public static function handleExportExcel(Request $request): StreamedResponse
     {
         $selectedMonth = $request->input('month', now()->format('Y-m'));
+
+        return self::streamCsv($selectedMonth);
+    }
+
+    public static function streamCsv(string $selectedMonth): StreamedResponse
+    {
         $startOfMonth = Carbon::parse($selectedMonth.'-01')->startOfMonth();
         $endOfMonth = Carbon::parse($selectedMonth.'-01')->endOfMonth();
 
@@ -215,7 +235,7 @@ class ReportDashboard extends Component
         $visitors = Visitor::with('employee')
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return view('livewire.report-dashboard', [
             'visitors' => $visitors,

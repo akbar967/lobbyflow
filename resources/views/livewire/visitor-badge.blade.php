@@ -5,6 +5,8 @@
                 background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .no-print {
                 display: none !important;
@@ -14,6 +16,8 @@
                 border: 2px solid #cbd5e1 !important;
                 page-break-inside: avoid;
                 margin: 0 auto !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
         }
         @page {
@@ -39,7 +43,7 @@
     </div>
 
     <!-- Desain ID Card Badge Tamu -->
-    <div class="badge-card w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden relative">
+    <div class="badge-card w-full max-w-sm bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden relative">
         <!-- Lubang Lanyard Clip Slot -->
         <div class="flex justify-center pt-3 pb-1 bg-indigo-700">
             <div class="w-14 h-2.5 bg-indigo-950/40 rounded-full border border-indigo-400/30"></div>

@@ -16,7 +16,7 @@ class OcrService
     public function scanKtp(string $imagePath): array
     {
         // 1. Coba Google Cloud Vision API bila API key tersedia
-        $visionKey = config('services.google.vision_key') ?? env('GOOGLE_VISION_API_KEY');
+        $visionKey = config('services.google.vision_key');
         if ($visionKey && file_exists($imagePath)) {
             try {
                 $result = $this->callGoogleVisionApi($imagePath, $visionKey);
@@ -29,7 +29,7 @@ class OcrService
         }
 
         // 2. Coba Gemini Vision API bila API key tersedia
-        $geminiKey = config('services.google.gemini_key') ?? env('GEMINI_API_KEY');
+        $geminiKey = config('services.google.gemini_key');
         if ($geminiKey && file_exists($imagePath)) {
             try {
                 $result = $this->callGeminiVisionApi($imagePath, $geminiKey);
@@ -141,11 +141,20 @@ class OcrService
     {
         $filename = pathinfo($imagePath, PATHINFO_FILENAME);
 
-        // Jika nama file mengandung nama orang (contoh: ktp_budi_santoso.jpg)
-        $cleanName = str_replace(['ktp', 'kartu', 'nama', 'card', '_', '-'], ' ', strtolower($filename));
-        $cleanName = trim(preg_replace('/\s+/', ' ', $cleanName));
+        // Abaikan nama file sementara seperti phpF92A.tmp atau livewire-tmp
+        $isTempFile = preg_match('/^(php[a-z0-9_]+|livewire[a-z0-9_\-]+|[a-f0-9]{32,})$/i', $filename);
 
-        $name = ! empty($cleanName) && strlen($cleanName) > 3 ? ucwords($cleanName) : 'Hendra Gunawan';
+        $cleanName = '';
+        if (! $isTempFile) {
+            // Jika nama file mengandung nama orang (contoh: ktp_budi_santoso.jpg)
+            $cleanName = str_replace(['ktp', 'kartu', 'nama', 'card', '_', '-'], ' ', strtolower($filename));
+            $cleanName = trim(preg_replace('/\s+/', ' ', $cleanName));
+        }
+
+        // Pastikan nama bukan alphanumeric acak
+        $isSensibleName = ! empty($cleanName) && strlen($cleanName) > 3 && preg_match('/^[a-z\s]+$/i', $cleanName);
+
+        $name = $isSensibleName ? ucwords($cleanName) : 'Hendra Gunawan';
         $instansi = 'PT Inovasi Digital Nusantara';
         $purpose = 'Presentasi Proyek & Kerjasama';
 

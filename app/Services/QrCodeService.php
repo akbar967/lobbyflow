@@ -26,9 +26,9 @@ class QrCodeService
             return $writer->writeString($data);
         } catch (Throwable $e) {
             // Fallback: minimal inline SVG with text or API if exception occurs
-            $encoded = urlencode($data);
+            $safeData = htmlspecialchars($data, ENT_QUOTES, 'UTF-8');
 
-            return "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{$size}\" height=\"{$size}\" viewBox=\"0 0 {$size} {$size}\"><rect width=\"100%\" height=\"100%\" fill=\"#f8fafc\"/><text x=\"50%\" y=\"50%\" font-size=\"14\" text-anchor=\"middle\" fill=\"#4f46e5\" font-family=\"sans-serif\">{$data}</text></svg>";
+            return "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{$size}\" height=\"{$size}\" viewBox=\"0 0 {$size} {$size}\"><rect width=\"100%\" height=\"100%\" fill=\"#f8fafc\"/><text x=\"50%\" y=\"50%\" font-size=\"14\" text-anchor=\"middle\" fill=\"#4f46e5\" font-family=\"sans-serif\">{$safeData}</text></svg>";
         }
     }
 

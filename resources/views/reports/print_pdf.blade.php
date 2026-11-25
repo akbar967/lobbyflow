@@ -16,6 +16,8 @@
                 background: white !important;
                 padding: 0 !important;
                 font-size: 11pt;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             .no-print {
                 display: none !important;
@@ -94,7 +96,8 @@
         </div>
 
         <!-- Tabel Data Tamu -->
-        <table class="w-full text-left border-collapse text-xs mb-8">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs mb-8">
             <thead>
                 <tr class="bg-gray-100 border-y border-gray-300 font-bold text-gray-700">
                     <th class="py-2.5 px-2">No</th>
@@ -140,6 +143,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
 
         <!-- Tanda Tangan Pengesahan Laporan -->
         <div class="flex justify-between items-end pt-8 border-t border-gray-200 text-xs text-gray-700">

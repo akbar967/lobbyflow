@@ -10,17 +10,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Throwable;
 
 #[Layout('components.layouts.app')]
 #[Title('LobbyFlow - Resepsionis Dashboard')]
 class LobbyDashboard extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public string $name = '';
 
@@ -36,9 +38,37 @@ class LobbyDashboard extends Component
 
     public ?string $successMessage = null;
 
+    // Properti Edit Tamu
+    public ?int $editingVisitorId = null;
+
+    public string $edit_name = '';
+
+    public string $edit_instansi = '';
+
+    public ?int $edit_employee_id = null;
+
+    public string $edit_purpose = '';
+
+    // Properti Tambah Pegawai (Master Data)
+    public bool $showEmployeeModal = false;
+
+    public string $new_emp_name = '';
+
+    public string $new_emp_department = '';
+
+    public string $new_emp_email = '';
+
+    // Properti Preview KTP
+    public ?string $previewImageUrl = null;
+
     public function mount(): void
     {
         $this->search = (string) request()->query('search', '');
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
     }
 
     protected function rules(): array
@@ -135,9 +165,23 @@ class LobbyDashboard extends Component
         $this->successMessage = 'Tamu berhasil check-in! Notifikasi email telah dikirim ke host.';
     }
 
+    public function simulateAiScan(): void
+    {
+        $this->name = 'Hendra Pratama';
+        $this->instansi = 'PT Inovasi Solusi AI';
+        $this->purpose = 'Presentasi Kemitraan Digital';
+        $this->successMessage = '✨ Smart Scan AI Demo: Data KTP/Kartu Nama berhasil diekstraksi ke form!';
+    }
+
     public function checkout(int $id): void
     {
         $visitor = Visitor::findOrFail($id);
+
+        if ($visitor->status === 'CHECKED_OUT') {
+            $this->successMessage = "Tamu {$visitor->name} sudah melakukan check-out sebelumnya.";
+
+            return;
+        }
 
         $now = now();
         $checkIn = $visitor->waktu_checkin ?? $visitor->check_in_at ?? $visitor->created_at;
@@ -169,6 +213,101 @@ class LobbyDashboard extends Component
             : "Tamu {$visitor->name} berhasil check-out.";
     }
 
+    public function editVisitor(int $id): void
+    {
+        $visitor = Visitor::findOrFail($id);
+        $this->editingVisitorId = $visitor->id;
+        $this->edit_name = $visitor->name;
+        $this->edit_instansi = $visitor->instansi;
+        $this->edit_employee_id = $visitor->employee_id;
+        $this->edit_purpose = $visitor->purpose;
+    }
+
+    public function updateVisitor(): void
+    {
+        $this->validate([
+            'edit_name' => 'required|string|max:255',
+            'edit_instansi' => 'required|string|max:255',
+            'edit_employee_id' => 'required|exists:employees,id',
+            'edit_purpose' => 'required|string|max:255',
+        ]);
+
+        $visitor = Visitor::findOrFail($this->editingVisitorId);
+        $employee = Employee::find($this->edit_employee_id);
+
+        $visitor->update([
+            'name' => $this->edit_name,
+            'nama_tamu' => $this->edit_name,
+            'instansi' => $this->edit_instansi,
+            'employee_id' => $this->edit_employee_id,
+            'host_tujuan' => $employee?->name,
+            'purpose' => $this->edit_purpose,
+            'keperluan' => $this->edit_purpose,
+        ]);
+
+        $this->cancelEdit();
+        $this->successMessage = 'Data kunjungan tamu berhasil diperbarui.';
+    }
+
+    public function cancelEdit(): void
+    {
+        $this->reset(['editingVisitorId', 'edit_name', 'edit_instansi', 'edit_employee_id', 'edit_purpose']);
+    }
+
+    public function deleteVisitor(int $id): void
+    {
+        $visitor = Visitor::findOrFail($id);
+        $name = $visitor->name;
+        $visitor->delete();
+        $this->successMessage = "Data kunjungan tamu {$name} berhasil dibatalkan/dihapus.";
+    }
+
+    public function addEmployee(): void
+    {
+        $this->validate([
+            'new_emp_name' => 'required|string|max:255',
+            'new_emp_department' => 'required|string|max:255',
+            'new_emp_email' => 'required|email|unique:employees,email',
+        ]);
+
+        $emp = Employee::create([
+            'name' => $this->new_emp_name,
+            'department' => $this->new_emp_department,
+            'email' => $this->new_emp_email,
+        ]);
+
+        $this->employee_id = $emp->id;
+        $this->reset(['new_emp_name', 'new_emp_department', 'new_emp_email', 'showEmployeeModal']);
+        $this->successMessage = "Pegawai {$emp->name} berhasil ditambahkan!";
+    }
+
+    public function seedDefaultEmployees(): void
+    {
+        if (Employee::count() === 0) {
+            Employee::insert([
+                ['name' => 'Budi Santoso', 'department' => 'Human Resources (HRD)', 'email' => 'budi@company.com', 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'Siti Aminah', 'department' => 'Finance & Accounting', 'email' => 'siti@company.com', 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'Andi Pratama', 'department' => 'IT & Engineering', 'email' => 'andi@company.com', 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'Dewi Lestari', 'department' => 'Marketing & Partnership', 'email' => 'dewi@company.com', 'created_at' => now(), 'updated_at' => now()],
+                ['name' => 'Rahmat Hidayat', 'department' => 'Operations & Facility', 'email' => 'rahmat@company.com', 'created_at' => now(), 'updated_at' => now()],
+            ]);
+            $this->successMessage = 'Data pegawai default berhasil digenerate!';
+        }
+    }
+
+    public function previewIdCard(int $id): void
+    {
+        $visitor = Visitor::findOrFail($id);
+        if ($visitor->id_card_image) {
+            $this->previewImageUrl = Storage::url($visitor->id_card_image);
+        }
+    }
+
+    public function closePreview(): void
+    {
+        $this->previewImageUrl = null;
+    }
+
     public function resetSearch(): void
     {
         $this->search = '';
@@ -193,6 +332,7 @@ class LobbyDashboard extends Component
             'instansi' => 'required|string|max:255',
             'employee_id' => 'required|exists:employees,id',
             'purpose' => 'required|string|max:255',
+            'id_card_image' => 'nullable|image|max:3072',
         ]);
 
         $employee = Employee::find($request->employee_id);
@@ -238,6 +378,10 @@ class LobbyDashboard extends Component
     {
         $visitor = Visitor::findOrFail($id);
 
+        if ($visitor->status === 'CHECKED_OUT') {
+            return redirect()->back()->with('error', "Tamu {$visitor->name} sudah melakukan check-out sebelumnya.");
+        }
+
         $now = now();
         $checkIn = $visitor->waktu_checkin ?? $visitor->check_in_at ?? $visitor->created_at;
 
@@ -281,9 +425,9 @@ class LobbyDashboard extends Component
                 });
             })
             ->latest()
-            ->get();
+            ->paginate(10);
 
-        $employees = Employee::all();
+        $employees = Employee::orderBy('name')->get();
 
         return view('livewire.lobby-dashboard', compact('visitors', 'employees'));
     }

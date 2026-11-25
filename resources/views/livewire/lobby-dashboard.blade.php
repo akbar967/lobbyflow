@@ -2,7 +2,7 @@
     <!-- Header -->
     <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4">
         <div class="flex items-center gap-3">
-            <img src="{{ asset('favicon.svg') }}" alt="LobbyFlow Logo" class="w-10 h-10 rounded-xl shadow-sm">
+            <img src="{{ asset('logo.svg') }}" alt="LobbyFlow Logo" class="w-10 h-10 rounded-xl shadow-sm">
             <div>
                 <h1 class="text-2xl font-bold text-indigo-600 leading-tight">LobbyFlow - Manajemen Tamu</h1>
                 <p class="text-xs text-gray-500 mt-0.5">Sistem resepsionis cerdas dan pemantauan kunjungan tamu secara real-time &bull; Powered by Livewire</p>
@@ -128,7 +128,9 @@
                         <label class="block text-xs font-bold text-gray-700 flex items-center gap-1.5">
                             <span class="text-indigo-600">✨</span> Smart Scan (KTP / Kartu Nama)
                         </label>
-                        <span class="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-bold">Livewire AI</span>
+                        <button type="button" wire:click="simulateAiScan" class="text-[10px] bg-purple-100 hover:bg-purple-200 text-purple-700 px-2.5 py-0.5 rounded-full font-bold transition flex items-center gap-1" title="Isi form otomatis dengan simulasi AI">
+                            <span>✨ Demo Scan</span>
+                        </button>
                     </div>
 
                     <div id="dropzone" class="border-2 border-dashed border-indigo-200 hover:border-indigo-400 rounded-xl p-3 text-center cursor-pointer bg-indigo-50/30 hover:bg-indigo-50/60 transition relative">
@@ -187,7 +189,22 @@
 
                 <!-- Host Tujuan -->
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700">Tujuan Bertemu (Host) <span class="text-red-500">*</span></label>
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-semibold text-gray-700">Tujuan Bertemu (Host) <span class="text-red-500">*</span></label>
+                        <button type="button" wire:click="$set('showEmployeeModal', true)" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-semibold hover:underline">
+                            + Tambah Pegawai
+                        </button>
+                    </div>
+
+                    @if($employees->isEmpty())
+                        <div class="mt-1.5 p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs flex items-center justify-between">
+                            <span>Belum ada data pegawai.</span>
+                            <button type="button" wire:click="seedDefaultEmployees" class="underline font-bold text-indigo-700 hover:text-indigo-900">
+                                Buat Pegawai Default
+                            </button>
+                        </div>
+                    @endif
+
                     <select wire:model="employee_id" class="mt-1 w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm @error('employee_id') border-red-300 @enderror">
                         <option value="">Pilih Pegawai</option>
                         @foreach($employees as $emp)
@@ -284,8 +301,17 @@
                             <tr wire:key="visitor-{{ $v->id }}" class="hover:bg-gray-50/75 transition">
                                 <!-- Tamu & Instansi -->
                                 <td class="py-3.5 pr-2">
-                                    <p class="font-bold text-gray-900">{{ $v->name ?? $v->nama_tamu }}</p>
-                                    <p class="text-xs text-gray-500 font-medium">{{ $v->instansi }}</p>
+                                    <div class="flex items-center gap-2">
+                                        <div>
+                                            <p class="font-bold text-gray-900">{{ $v->name ?? $v->nama_tamu }}</p>
+                                            <p class="text-xs text-gray-500 font-medium">{{ $v->instansi }}</p>
+                                        </div>
+                                        @if($v->id_card_image)
+                                            <button type="button" wire:click="previewIdCard({{ $v->id }})" class="p-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded border border-indigo-200 text-[10px] font-semibold transition flex items-center gap-0.5" title="Lihat Foto KTP">
+                                                📷 KTP
+                                            </button>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 <!-- Host Tujuan -->
@@ -328,33 +354,47 @@
                                     @endif
                                 </td>
 
-                                <!-- Tombol Aksi: Cetak Badge & Check-Out 1-Klik Livewire -->
+                                <!-- Tombol Aksi: Cetak Badge, Check-Out, Edit, Hapus -->
                                 <td class="py-3.5 text-center">
-                                    <div class="flex items-center justify-center gap-2">
-                                        <!-- Tombol Cetak Badge (Membuka tab baru) -->
-                                        <a href="{{ route('visitors.badge', $v->id) }}" target="_blank" class="inline-flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white px-2.5 py-1.5 rounded-lg border border-indigo-200 hover:border-indigo-600 font-medium transition shadow-sm" title="Buka ID Card & Siap Cetak">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <!-- Tombol Cetak Badge -->
+                                        <a href="{{ route('visitors.badge', $v->id) }}" target="_blank" class="inline-flex items-center gap-1 text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white px-2 py-1.5 rounded-lg border border-indigo-200 hover:border-indigo-600 font-medium transition shadow-sm" title="Buka ID Card & Siap Cetak">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                             </svg>
-                                            <span>Cetak Badge</span>
+                                            <span class="hidden sm:inline">Cetak</span>
                                         </a>
 
-                                        <!-- Tombol Check-Out 1-Klik Livewire -->
+                                        <!-- Tombol Check-Out 1-Klik Livewire dengan Dialog Konfirmasi -->
                                         @if($v->status === 'INSIDE')
-                                            <button type="button" wire:click="checkout({{ $v->id }})" wire:loading.attr="disabled" class="inline-flex items-center gap-1 text-xs bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-2.5 py-1.5 rounded-lg border border-red-200 hover:border-red-600 font-medium transition shadow-sm disabled:opacity-50">
+                                            <button type="button" wire:click="checkout({{ $v->id }})" wire:confirm="Konfirmasi check-out untuk tamu {{ $v->name }}?" wire:loading.attr="disabled" class="inline-flex items-center gap-1 text-xs bg-red-50 text-red-600 hover:bg-red-600 hover:text-white px-2 py-1.5 rounded-lg border border-red-200 hover:border-red-600 font-medium transition shadow-sm disabled:opacity-50" title="Check-Out Tamu">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                                                 </svg>
                                                 <span>Check-Out</span>
                                             </button>
                                         @else
-                                            <span class="inline-flex items-center gap-1 text-xs text-gray-400 font-medium py-1 px-1">
+                                            <span class="inline-flex items-center gap-0.5 text-xs text-gray-400 font-medium py-1 px-1">
                                                 <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                 </svg>
                                                 Selesai
                                             </span>
                                         @endif
+
+                                        <!-- Tombol Edit Data Tamu -->
+                                        <button type="button" wire:click="editVisitor({{ $v->id }})" class="p-1.5 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition" title="Edit Data Tamu">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                            </svg>
+                                        </button>
+
+                                        <!-- Tombol Hapus/Batal Kunjungan -->
+                                        <button type="button" wire:click="deleteVisitor({{ $v->id }})" wire:confirm="Batalkan dan hapus data kunjungan tamu {{ $v->name }}?" class="p-1.5 text-gray-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition" title="Batalkan / Hapus Kunjungan">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -375,36 +415,127 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Paginasi Tabel -->
+            @if($visitors->hasPages())
+                <div class="mt-4 pt-3 border-t">
+                    {{ $visitors->links() }}
+                </div>
+            @endif
         </div>
     </div>
 
-    <script>
-        function simulateAiScan() {
-            const scanningIndicator = document.getElementById('ai_scanning_indicator');
-            if (scanningIndicator) scanningIndicator.classList.remove('hidden');
+    <!-- Modal Edit Data Tamu -->
+    @if($editingVisitorId)
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-200">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>✏️</span> Edit Data Kunjungan Tamu
+                    </h3>
+                    <button type="button" wire:click="cancelEdit" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                </div>
 
-            setTimeout(() => {
-                if (scanningIndicator) scanningIndicator.classList.add('hidden');
+                <form wire:submit="updateVisitor" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700">Nama Tamu</label>
+                        <input type="text" wire:model="edit_name" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        @error('edit_name') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700">Asal Instansi</label>
+                        <input type="text" wire:model="edit_instansi" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        @error('edit_instansi') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700">Pegawai Dituju (Host)</label>
+                        <select wire:model="edit_employee_id" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Pilih Pegawai</option>
+                            @foreach($employees as $emp)
+                                <option value="{{ $emp->id }}">{{ $emp->name }} ({{ $emp->department }})</option>
+                            @endforeach
+                        </select>
+                        @error('edit_employee_id') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700">Keperluan Kunjungan</label>
+                        <input type="text" wire:model="edit_purpose" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        @error('edit_purpose') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
 
-                const inputName = document.getElementById('input_name');
-                const inputInstansi = document.getElementById('input_instansi');
-                const inputPurpose = document.getElementById('input_purpose');
+                    <div class="flex justify-end gap-2 pt-3 border-t">
+                        <button type="button" wire:click="cancelEdit" class="px-3.5 py-1.5 border rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 shadow-sm">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 
-                if (inputName) {
-                    inputName.value = 'Hendra Pratama';
-                    inputName.dispatchEvent(new Event('input'));
-                }
-                if (inputInstansi) {
-                    inputInstansi.value = 'PT Inovasi Solusi AI';
-                    inputInstansi.dispatchEvent(new Event('input'));
-                }
-                if (inputPurpose) {
-                    inputPurpose.value = 'Presentasi Kemitraan Digital';
-                    inputPurpose.dispatchEvent(new Event('input'));
-                }
+    <!-- Modal Tambah Master Pegawai -->
+    @if($showEmployeeModal)
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 border border-slate-200">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>👔</span> Tambah Pegawai (Host) Baru
+                    </h3>
+                    <button type="button" wire:click="$set('showEmployeeModal', false)" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                </div>
 
-                alert('✨ Smart Scan AI Berhasil: Informasi KTP/Kartu Nama berhasil diekstraksi dan diisikan ke form.');
-            }, 900);
-        }
-    </script>
+                <form wire:submit="addEmployee" class="space-y-3.5">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700">Nama Lengkap Pegawai</label>
+                        <input type="text" wire:model="new_emp_name" placeholder="Contoh: Budi Santoso" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        @error('new_emp_name') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700">Departemen / Divisi</label>
+                        <input type="text" wire:model="new_emp_department" placeholder="Contoh: HRD / Finance" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        @error('new_emp_department') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700">Email Pegawai (Untuk Notifikasi)</label>
+                        <input type="email" wire:model="new_emp_email" placeholder="Contoh: budi@company.com" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        @error('new_emp_email') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-3 border-t">
+                        <button type="button" wire:click="$set('showEmployeeModal', false)" class="px-3.5 py-1.5 border rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                            Tutup
+                        </button>
+                        <button type="submit" class="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 shadow-sm">
+                            Simpan Pegawai
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    <!-- Modal Pratinjau Foto KTP -->
+    @if($previewImageUrl)
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-5 border border-slate-200">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+                        <span>📷</span> Foto Dokumen Identitas (KTP / Kartu Nama)
+                    </h3>
+                    <button type="button" wire:click="closePreview" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                </div>
+                <div class="bg-slate-100 rounded-xl overflow-hidden flex items-center justify-center border p-2">
+                    <img src="{{ $previewImageUrl }}" alt="Dokumen KTP" class="max-h-80 w-auto object-contain rounded-lg shadow-sm">
+                </div>
+                <div class="flex justify-end mt-4">
+                    <button type="button" wire:click="closePreview" class="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-xs font-semibold transition">
+                        Tutup Pratinjau
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

@@ -17,7 +17,7 @@ class GeminiService
      */
     public function generateExecutiveSummary(array $stats, string $month): array
     {
-        $apiKey = config('services.google.gemini_key') ?? env('GEMINI_API_KEY');
+        $apiKey = config('services.google.gemini_key');
         $monthName = Carbon::parse($month.'-01')->format('F Y');
 
         if ($apiKey) {

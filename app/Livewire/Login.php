@@ -61,7 +61,17 @@ class Login extends Component
     public function quickLogin(string $role)
     {
         $targetEmail = $role === 'admin' ? 'admin@lobbyflow.com' : 'resepsionis@lobbyflow.com';
-        $user = User::where('email', $targetEmail)->firstOrFail();
+        $user = User::where('email', $targetEmail)->first();
+
+        // Jika database belum di-seed, buat akun default secara instan agar tidak melempar ModelNotFoundException
+        if (! $user) {
+            $user = User::create([
+                'name' => $role === 'admin' ? 'Administrator Lobi' : 'Resepsionis Utama',
+                'email' => $targetEmail,
+                'password' => bcrypt('password'),
+                'role' => $role === 'admin' ? 'admin' : 'receptionist',
+            ]);
+        }
 
         Auth::login($user);
         session()->regenerate();
@@ -104,7 +114,16 @@ class Login extends Component
     public static function handleQuickLogin(string $role)
     {
         $email = $role === 'admin' ? 'admin@lobbyflow.com' : 'resepsionis@lobbyflow.com';
-        $user = User::where('email', $email)->firstOrFail();
+        $user = User::where('email', $email)->first();
+
+        if (! $user) {
+            $user = User::create([
+                'name' => $role === 'admin' ? 'Administrator Lobi' : 'Resepsionis Utama',
+                'email' => $email,
+                'password' => bcrypt('password'),
+                'role' => $role === 'admin' ? 'admin' : 'receptionist',
+            ]);
+        }
 
         Auth::login($user);
         request()->session()->regenerate();
