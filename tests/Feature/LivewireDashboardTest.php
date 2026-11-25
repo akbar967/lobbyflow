@@ -216,3 +216,46 @@ test('livewire supports visitor pre-registration and arrival confirmation', func
 
     expect($visitor->fresh()->status)->toBe('INSIDE');
 });
+
+test('livewire generates demo visitors to make dashboard lively', function () {
+    Livewire::test(LobbyDashboard::class)
+        ->call('generateDemoVisitors')
+        ->assertSee('Google Indonesia')
+        ->assertSee('PT Bank Central Asia Tbk')
+        ->assertSee('PT Telkomsel Regional');
+
+    expect(Visitor::count())->toBeGreaterThanOrEqual(5);
+});
+
+test('livewire generates whatsapp notification preview for host', function () {
+    $employee = Employee::create([
+        'name' => 'Maya Anggraini',
+        'department' => 'Corporate Secretary',
+        'email' => 'maya@company.com',
+    ]);
+
+    $visitor = Visitor::create([
+        'name' => 'Doni Siregar',
+        'nama_tamu' => 'Doni Siregar',
+        'instansi' => 'PT Mitra Utama',
+        'employee_id' => $employee->id,
+        'purpose' => 'Audiensi Direksi',
+        'status' => 'INSIDE',
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->call('openWhatsAppModal', $visitor->id)
+        ->assertSee('Kirim Notifikasi WhatsApp ke Host')
+        ->assertSee('Doni Siregar')
+        ->assertSee('PT Mitra Utama')
+        ->assertSee('Maya Anggraini');
+});
+
+test('livewire edits and saves announcement ticker', function () {
+    Livewire::test(LobbyDashboard::class)
+        ->call('editAnnouncement')
+        ->set('newAnnouncement', '📢 Hari ini ada audit ISO 27001 di lantai 3.')
+        ->call('saveAnnouncement')
+        ->assertSee('Pengumuman lobi berhasil diperbarui!')
+        ->assertSee('audit ISO 27001');
+});

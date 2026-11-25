@@ -49,12 +49,47 @@
                 </span>
             @endif
 
+            <!-- Live Clock & Office Hours Widget -->
+            <div class="hidden lg:flex items-center gap-2.5 bg-white px-3 py-1.5 rounded-xl border border-gray-200 shadow-sm text-xs">
+                <span class="text-base">🕒</span>
+                <div class="text-left">
+                    <div id="live-clock" class="font-mono font-bold text-gray-800 text-xs">--:--:-- WIB</div>
+                    <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Lobi Beroperasi (Buka)
+                    </span>
+                </div>
+            </div>
+
             <span class="text-sm bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-medium flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
                 Live Monitoring
             </span>
         </div>
     </header>
+
+    <!-- 📢 Papan Pengumuman Lobi Interaktif (Announcement Ticker) -->
+    <div class="mb-5 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 text-xs shadow-sm">
+        <div class="flex items-center gap-2.5 flex-1 min-w-0">
+            <span class="text-base flex-shrink-0 animate-bounce">📢</span>
+            @if($isEditingAnnouncement)
+                <div class="flex items-center gap-2 w-full">
+                    <input type="text" wire:model="newAnnouncement" class="w-full p-1.5 border rounded-lg text-xs bg-white focus:ring-2 focus:ring-amber-500">
+                    <button type="button" wire:click="saveAnnouncement" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded-md font-semibold text-[11px] whitespace-nowrap shadow-sm">Simpan</button>
+                    <button type="button" wire:click="cancelEditAnnouncement" class="text-gray-500 hover:text-gray-700 text-[11px] px-2">Batal</button>
+                </div>
+            @else
+                <div class="truncate text-amber-950 font-medium tracking-wide">
+                    {{ $announcement }}
+                </div>
+            @endif
+        </div>
+        @if(!$isEditingAnnouncement)
+            <button type="button" wire:click="editAnnouncement" class="text-[11px] text-amber-700 hover:text-amber-900 font-semibold hover:underline flex-shrink-0 flex items-center gap-1 ml-2" title="Ubah Pengumuman Lobi">
+                ✏️ Ubah Teks
+            </button>
+        @endif
+    </div>
 
     <!-- Flash Alert Messages -->
     @if(session('error'))
@@ -356,6 +391,11 @@
                     <p class="text-xs text-gray-500 mt-0.5">Pemantauan interaktif reaktif &bull; Powered by Livewire</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <button type="button" wire:click="generateDemoVisitors" wire:loading.attr="disabled" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 text-purple-700 border border-purple-200 px-3 py-1 rounded-full transition shadow-sm" title="Generate 5 data tamu contoh otomatis untuk demo lobi ramai">
+                        <span>🎲</span>
+                        <span wire:loading.remove wire:target="generateDemoVisitors">Simulasi Tamu Ramai</span>
+                        <span wire:loading wire:target="generateDemoVisitors">Membuat Tamu...</span>
+                    </button>
                     <span class="text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full font-bold">
                         {{ $visitors->total() }} Tamu Tercatat
                     </span>
@@ -529,6 +569,13 @@
                                                 Selesai
                                             </span>
                                         @endif
+
+                                        <!-- Tombol Notifikasi WhatsApp ke Host -->
+                                        <button type="button" wire:click="openWhatsAppModal({{ $v->id }})" class="p-1.5 text-gray-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50 transition" title="Kirim Notifikasi WhatsApp ke Host">
+                                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.54 1.769.839 2.791.84h.005c3.18 0 5.766-2.587 5.767-5.766.001-3.181-2.585-5.766-5.766-5.766zm9.969 5.767c0 5.514-4.486 10-10 10-1.748 0-3.385-.45-4.819-1.238l-7.181 1.88 1.914-6.994c-.878-1.492-1.385-3.23-1.385-5.087 0-5.515 4.486-10 10-10 5.514 0 10 4.485 10 10z"/>
+                                            </svg>
+                                        </button>
 
                                         <!-- Tombol Edit Data Tamu -->
                                         <button type="button" wire:click="editVisitor({{ $v->id }})" class="p-1.5 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition" title="Edit Data Tamu">
@@ -758,4 +805,67 @@
             </div>
         </div>
     @endif
+
+    <!-- Modal Notifikasi WhatsApp ke Host (Simulator & Direct Link) -->
+    @if($showWhatsAppModal)
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden border border-slate-200">
+                <!-- Header WhatsApp -->
+                <div class="bg-emerald-600 text-white p-4 flex justify-between items-center">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-lg">
+                            💬
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold">Kirim Notifikasi WhatsApp ke Host</h3>
+                            <p class="text-[11px] text-emerald-100">Kirim pesan instan bahwa tamu telah tiba di lobi</p>
+                        </div>
+                    </div>
+                    <button type="button" wire:click="closeWhatsAppModal" class="text-white/80 hover:text-white font-bold text-lg">✕</button>
+                </div>
+
+                <div class="p-5 space-y-4">
+                    <!-- WhatsApp Chat Bubble Preview -->
+                    <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                                <span>📱</span> Kepada: {{ $whatsAppData['host'] ?? '-' }}
+                            </span>
+                            <span class="text-[10px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-semibold">Tamu Tiba di Lobi</span>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border border-emerald-200 shadow-sm text-xs text-gray-800 leading-relaxed font-sans whitespace-pre-line">
+                            {{ $whatsAppData['message'] ?? '' }}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row justify-end items-center gap-2 pt-2 border-t">
+                        <button type="button" wire:click="closeWhatsAppModal" class="w-full sm:w-auto px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-semibold transition">
+                            Tutup
+                        </button>
+                        <a href="{{ $whatsAppData['link'] ?? '#' }}" target="_blank" class="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-md transition">
+                            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.54 1.769.839 2.791.84h.005c3.18 0 5.766-2.587 5.767-5.766.001-3.181-2.585-5.766-5.766-5.766zm9.969 5.767c0 5.514-4.486 10-10 10-1.748 0-3.385-.45-4.819-1.238l-7.181 1.88 1.914-6.994c-.878-1.492-1.385-3.23-1.385-5.087 0-5.515 4.486-10 10-10 5.514 0 10 4.485 10 10z"/>
+                            </svg>
+                            <span>Buka WhatsApp Web / App</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <script>
+        function updateLiveClock() {
+            const el = document.getElementById('live-clock');
+            if (!el) return;
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            el.textContent = `${h}:${m}:${s} WIB`;
+        }
+        setInterval(updateLiveClock, 1000);
+        updateLiveClock();
+    </script>
 </div>

@@ -73,6 +73,18 @@ class LobbyDashboard extends Component
     // Properti Preview KTP
     public ?string $previewImageUrl = null;
 
+    // Properti Papan Pengumuman Lobi (Announcement Ticker)
+    public string $announcement = '📢 Selamat Datang di LobbyFlow Enterprise! Harap selalu mengenakan Visitor Pass di area gedung kantor & melapor ke meja resepsionis saat check-out.';
+
+    public bool $isEditingAnnouncement = false;
+
+    public string $newAnnouncement = '';
+
+    // Properti WhatsApp Notification Simulator
+    public bool $showWhatsAppModal = false;
+
+    public array $whatsAppData = [];
+
     public function mount(): void
     {
         $this->search = (string) request()->query('search', '');
@@ -356,6 +368,147 @@ class LobbyDashboard extends Component
         $name = $employee->name;
         $employee->delete();
         $this->successMessage = "Pegawai {$name} berhasil dihapus dari master data.";
+    }
+
+    public function openWhatsAppModal(int $id): void
+    {
+        $visitor = Visitor::with('employee')->findOrFail($id);
+        $hostName = $visitor->employee?->name ?? $visitor->host_tujuan ?? 'Bapak/Ibu Pegawai';
+        $guestName = $visitor->name;
+        $guestCompany = $visitor->instansi;
+        $purpose = $visitor->purpose ?? '-';
+        $pass = $visitor->qr_code ?? ('PASS-'.$visitor->id);
+
+        $text = "Halo *{$hostName}*,\n\nTamu Anda *{$guestName}* dari *{$guestCompany}* telah tiba di Meja Resepsionis Lobi Gedung.\n\nKeperluan: {$purpose}\nKode Pass: {$pass}\n\nMohon dapat segera menemui tamu di lobi. Terima kasih! (LobbyFlow Enterprise)";
+
+        $this->whatsAppData = [
+            'visitor_id' => $visitor->id,
+            'name' => $guestName,
+            'host' => $hostName,
+            'instansi' => $guestCompany,
+            'purpose' => $purpose,
+            'pass' => $pass,
+            'message' => $text,
+            'link' => 'https://wa.me/?text='.urlencode($text),
+        ];
+
+        $this->showWhatsAppModal = true;
+    }
+
+    public function closeWhatsAppModal(): void
+    {
+        $this->showWhatsAppModal = false;
+        $this->whatsAppData = [];
+    }
+
+    public function editAnnouncement(): void
+    {
+        $this->newAnnouncement = $this->announcement;
+        $this->isEditingAnnouncement = true;
+    }
+
+    public function saveAnnouncement(): void
+    {
+        if (trim($this->newAnnouncement) !== '') {
+            $this->announcement = trim($this->newAnnouncement);
+            $this->successMessage = 'Pengumuman lobi berhasil diperbarui!';
+        }
+        $this->isEditingAnnouncement = false;
+    }
+
+    public function cancelEditAnnouncement(): void
+    {
+        $this->isEditingAnnouncement = false;
+    }
+
+    public function generateDemoVisitors(): void
+    {
+        $this->seedDefaultEmployees();
+
+        $employees = Employee::all();
+        if ($employees->isEmpty()) {
+            return;
+        }
+
+        $now = now();
+        $demos = [
+            [
+                'name' => 'Dimas Surya, S.T.',
+                'instansi' => 'Google Indonesia',
+                'employee_id' => $employees[0]->id,
+                'host' => $employees[0]->name,
+                'purpose' => 'Presentasi Integrasi Cloud Enterprise',
+                'status' => 'INSIDE',
+                'check_in' => $now->copy()->subMinutes(25),
+                'check_out' => null,
+                'durasi' => null,
+            ],
+            [
+                'name' => 'Dr. Ratna Kusuma',
+                'instansi' => 'PT Bank Central Asia Tbk',
+                'employee_id' => $employees[1]->id ?? $employees[0]->id,
+                'host' => $employees[1]->name ?? $employees[0]->name,
+                'purpose' => 'Koordinasi Kerjasama Payroll Perusahaan',
+                'status' => 'INSIDE',
+                'check_in' => $now->copy()->subMinutes(50),
+                'check_out' => null,
+                'durasi' => null,
+            ],
+            [
+                'name' => 'Agus Wicaksono',
+                'instansi' => 'PT Telkomsel Regional',
+                'employee_id' => $employees[2]->id ?? $employees[0]->id,
+                'host' => $employees[2]->name ?? $employees[0]->name,
+                'purpose' => 'Maintenance Jaringan Fiber Optik Lobi',
+                'status' => 'CHECKED_OUT',
+                'check_in' => $now->copy()->subHours(2),
+                'check_out' => $now->copy()->subMinutes(30),
+                'durasi' => '1 jam 30 menit',
+            ],
+            [
+                'name' => 'Clarissa Stephanie',
+                'instansi' => 'Kementerian Investasi / BKPM',
+                'employee_id' => $employees[3]->id ?? $employees[0]->id,
+                'host' => $employees[3]->name ?? $employees[0]->name,
+                'purpose' => 'Audit Dokumen Legalitas Fasilitas',
+                'status' => 'SCHEDULED',
+                'check_in' => null,
+                'check_out' => null,
+                'durasi' => null,
+            ],
+            [
+                'name' => 'Bambang Trihatmojo',
+                'instansi' => 'PT Astra International Tbk',
+                'employee_id' => $employees[4]->id ?? $employees[0]->id,
+                'host' => $employees[4]->name ?? $employees[0]->name,
+                'purpose' => 'Pertemuan Evaluasi Pengadaan Armada',
+                'status' => 'CHECKED_OUT',
+                'check_in' => $now->copy()->subHours(3),
+                'check_out' => $now->copy()->subHours(1),
+                'durasi' => '2 jam',
+            ],
+        ];
+
+        foreach ($demos as $demo) {
+            Visitor::create([
+                'name' => $demo['name'],
+                'nama_tamu' => $demo['name'],
+                'instansi' => $demo['instansi'],
+                'employee_id' => $demo['employee_id'],
+                'host_tujuan' => $demo['host'],
+                'purpose' => $demo['purpose'],
+                'keperluan' => $demo['purpose'],
+                'qr_code' => 'PASS-'.strtoupper(uniqid()),
+                'status' => $demo['status'],
+                'check_in_at' => $demo['check_in'],
+                'waktu_checkin' => $demo['check_in'],
+                'check_out_at' => $demo['check_out'],
+                'waktu_checkout' => $demo['check_out'],
+                'durasi' => $demo['durasi'],
+            ]);
+        }
+
+        $this->successMessage = '✨ 5 Data Tamu Contoh Berhasil Ditambahkan! Lobi kini ramai dengan tamu aktif, terjadwal, dan riwayat selesai.';
     }
 
     public function quickCheckout(): void
