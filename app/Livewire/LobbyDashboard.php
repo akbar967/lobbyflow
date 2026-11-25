@@ -6,6 +6,7 @@ use App\Mail\VisitorArrivedMail;
 use App\Models\Employee;
 use App\Models\Visitor;
 use App\Services\OcrService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +17,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 #[Layout('components.layouts.app')]
@@ -84,6 +86,9 @@ class LobbyDashboard extends Component
     public bool $showWhatsAppModal = false;
 
     public array $whatsAppData = [];
+
+    // Properti Roster Evakuasi Darurat (K3 / HSE)
+    public bool $showEvacuationModal = false;
 
     public function mount(): void
     {
@@ -205,6 +210,8 @@ class LobbyDashboard extends Component
 
         $this->reset(['name', 'instansi', 'employee_id', 'purpose', 'id_card_image', 'is_preregistered']);
 
+        $this->dispatch('play-chime');
+
         $this->successMessage = $status === 'SCHEDULED'
             ? 'Pra-Registrasi Tamu berhasil dijadwalkan! Tamu dapat konfirmasi tiba saat sampai di lobi.'
             : 'Tamu berhasil check-in! Notifikasi email telah dikirim ke host.';
@@ -228,6 +235,8 @@ class LobbyDashboard extends Component
                 Log::warning('Gagal mengirim email notifikasi ke host: '.$e->getMessage());
             }
         }
+
+        $this->dispatch('play-chime');
 
         $this->successMessage = "Tamu {$visitor->name} telah dikonfirmasi tiba di lobi!";
     }
@@ -274,6 +283,8 @@ class LobbyDashboard extends Component
             'waktu_checkout' => $now,
             'durasi' => $durasi,
         ]);
+
+        $this->dispatch('play-chime');
 
         $this->successMessage = $durasi
             ? "Tamu {$visitor->name} berhasil check-out! Durasi kunjungan: {$durasi}."
@@ -399,6 +410,82 @@ class LobbyDashboard extends Component
     {
         $this->showWhatsAppModal = false;
         $this->whatsAppData = [];
+    }
+
+    public function openEvacuationModal(): void
+    {
+        $this->showEvacuationModal = true;
+    }
+
+    public function closeEvacuationModal(): void
+    {
+        $this->showEvacuationModal = false;
+    }
+
+    /**
+     * Ekspor Data Tamu Hari Ini Langsung ke File CSV (.csv / Excel)
+     */
+    public function exportTodayCsv(): StreamedResponse
+    {
+        $today = today();
+        $visitors = Visitor::with('employee')
+            ->whereDate('created_at', $today)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        $filename = 'rekap-tamu-hari-ini-'.$today->format('Y-m-d').'.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($visitors) {
+            $handle = fopen('php://output', 'w');
+            // Menulis UTF-8 BOM agar rapi di Microsoft Excel Windows
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            fputcsv($handle, [
+                'No',
+                'Kode Pass',
+                'Nama Tamu',
+                'Asal Instansi',
+                'Pegawai Dituju (Host)',
+                'Departemen',
+                'Keperluan',
+                'Status',
+                'Waktu Check-In',
+                'Waktu Check-Out',
+                'Durasi Kunjungan',
+            ]);
+
+            $i = 1;
+            foreach ($visitors as $v) {
+                $checkIn = $v->waktu_checkin ? Carbon::parse($v->waktu_checkin)->format('d/m/Y H:i') : ($v->check_in_at ? Carbon::parse($v->check_in_at)->format('d/m/Y H:i') : '-');
+                $checkOut = $v->waktu_checkout ? Carbon::parse($v->waktu_checkout)->format('d/m/Y H:i') : ($v->check_out_at ? Carbon::parse($v->check_out_at)->format('d/m/Y H:i') : '-');
+
+                fputcsv($handle, [
+                    $i++,
+                    $v->qr_code ?? ('PASS-'.$v->id),
+                    $v->name ?? $v->nama_tamu,
+                    $v->instansi,
+                    $v->employee?->name ?? $v->host_tujuan ?? '-',
+                    $v->employee?->department ?? '-',
+                    $v->purpose ?? $v->keperluan ?? '-',
+                    $v->status,
+                    $checkIn,
+                    $checkOut,
+                    $v->durasi_kunjungan ?? '-',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     public function editAnnouncement(): void
@@ -689,6 +776,10 @@ class LobbyDashboard extends Component
             'total_employees' => $employees->count(),
         ];
 
-        return view('livewire.lobby-dashboard', compact('visitors', 'employees', 'stats'));
+        $evacuationVisitors = $this->showEvacuationModal
+            ? Visitor::with('employee')->where('status', 'INSIDE')->orderBy('check_in_at', 'asc')->get()
+            : collect();
+
+        return view('livewire.lobby-dashboard', compact('visitors', 'employees', 'stats', 'evacuationVisitors'));
     }
 }

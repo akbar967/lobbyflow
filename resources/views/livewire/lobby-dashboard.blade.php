@@ -61,6 +61,18 @@
                 </div>
             </div>
 
+            <!-- Suara Lobi Chime Toggle -->
+            <button type="button" onclick="toggleLobbyAudio()" id="audio-toggle-btn" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-full transition shadow-sm" title="Aktifkan / Bisukan Nada Dering Notifikasi Lobi">
+                <span id="audio-icon">🔔</span>
+                <span id="audio-label" class="hidden sm:inline">Suara Lobi: On</span>
+            </button>
+
+            <!-- Tombol Evakuasi Darurat K3 (HSE Muster Roll) -->
+            <button type="button" wire:click="openEvacuationModal" class="inline-flex items-center gap-1.5 text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-3 py-1.5 rounded-full transition shadow-sm" title="Buka Daftar Evakuasi Darurat K3 (Tamu di dalam gedung)">
+                <span class="animate-pulse">🚨</span>
+                <span>Evakuasi (K3)</span>
+            </button>
+
             <span class="text-sm bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-medium flex items-center gap-1.5">
                 <span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
                 Live Monitoring
@@ -391,6 +403,15 @@
                     <p class="text-xs text-gray-500 mt-0.5">Pemantauan interaktif reaktif &bull; Powered by Livewire</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <!-- Tombol Unduh CSV Hari Ini -->
+                    <button type="button" wire:click="exportTodayCsv" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full transition shadow-sm" title="Unduh data seluruh tamu hari ini ke file CSV (.csv / Excel)">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span class="hidden sm:inline">Unduh CSV Hari Ini</span>
+                        <span class="sm:hidden">CSV</span>
+                    </button>
+
                     <button type="button" wire:click="generateDemoVisitors" wire:loading.attr="disabled" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-gradient-to-r from-purple-50 to-indigo-50 hover:from-purple-100 hover:to-indigo-100 text-purple-700 border border-purple-200 px-3 py-1 rounded-full transition shadow-sm" title="Generate 5 data tamu contoh otomatis untuk demo lobi ramai">
                         <span>🎲</span>
                         <span wire:loading.remove wire:target="generateDemoVisitors">Simulasi Tamu Ramai</span>
@@ -479,6 +500,15 @@
                                         <div>
                                             <p class="font-bold text-gray-900">{{ $v->name ?? $v->nama_tamu }}</p>
                                             <p class="text-xs text-gray-500 font-medium">{{ $v->instansi }}</p>
+                                            <!-- Kode Pass Tamu dengan Salin 1-Klik -->
+                                            <div class="mt-1 flex items-center gap-1">
+                                                <span class="font-mono text-[10px] text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200">{{ $v->qr_code ?? ('PASS-'.$v->id) }}</span>
+                                                <button type="button" onclick="navigator.clipboard.writeText('{{ $v->qr_code ?? ('PASS-'.$v->id) }}'); showCopyToast('{{ $v->qr_code ?? ('PASS-'.$v->id) }}')" class="text-gray-400 hover:text-indigo-600 p-0.5 rounded hover:bg-gray-100 transition" title="Salin Kode Pass">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
                                         </div>
                                         @if($v->id_card_image)
                                             <button type="button" wire:click="previewIdCard({{ $v->id }})" class="p-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded border border-indigo-200 text-[10px] font-semibold transition flex items-center gap-0.5" title="Lihat Foto KTP">
@@ -855,6 +885,105 @@
         </div>
     @endif
 
+    <!-- Modal Roster Evakuasi Darurat K3 (HSE Muster Roll) -->
+    @if($showEvacuationModal)
+        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden border-2 border-rose-600">
+                <!-- Header Evakuasi -->
+                <div class="bg-gradient-to-r from-rose-700 via-red-600 to-rose-700 text-white p-5 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-2xl animate-pulse">
+                            🚨
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-extrabold tracking-wide uppercase">Daftar Evakuasi Darurat (K3 / HSE Muster Roll)</h3>
+                            <p class="text-xs text-rose-100">Daftar seluruh tamu yang terkonfirmasi berada di dalam gedung saat ini</p>
+                        </div>
+                    </div>
+                    <button type="button" wire:click="closeEvacuationModal" class="text-white/80 hover:text-white font-bold text-xl px-2">✕</button>
+                </div>
+
+                <!-- Info Banner K3 & Headcount -->
+                <div class="bg-rose-50 border-b border-rose-200 p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-semibold text-rose-900">Total Tamu Di Dalam Gedung (Headcount):</span>
+                        <span class="text-xl font-black text-rose-700 bg-white px-3 py-0.5 rounded-lg border border-rose-300 shadow-sm">
+                            {{ count($evacuationVisitors) }} Orang
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="window.print()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition shadow-sm">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            <span>Cetak / Print Roster Evakuasi</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabel Roster Tamu -->
+                <div class="p-5 overflow-y-auto flex-1">
+                    @if(count($evacuationVisitors) > 0)
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead class="bg-gray-100 text-gray-700 font-bold border-b sticky top-0">
+                                <tr>
+                                    <th class="p-2.5">No</th>
+                                    <th class="p-2.5">Pass ID</th>
+                                    <th class="p-2.5">Nama Tamu</th>
+                                    <th class="p-2.5">Instansi</th>
+                                    <th class="p-2.5">Host Dituju</th>
+                                    <th class="p-2.5">Departemen</th>
+                                    <th class="p-2.5">Waktu Check-In</th>
+                                    <th class="p-2.5 text-center">Status Evakuasi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y text-gray-800">
+                                @foreach($evacuationVisitors as $index => $ev)
+                                    <tr class="hover:bg-rose-50/50 transition">
+                                        <td class="p-2.5 font-bold text-gray-500">{{ $index + 1 }}</td>
+                                        <td class="p-2.5 font-mono font-bold text-rose-700">{{ $ev->qr_code ?? ('PASS-'.$ev->id) }}</td>
+                                        <td class="p-2.5 font-bold text-gray-900">{{ $ev->name ?? $ev->nama_tamu }}</td>
+                                        <td class="p-2.5">{{ $ev->instansi }}</td>
+                                        <td class="p-2.5 font-semibold text-gray-800">{{ $ev->employee?->name ?? $ev->host_tujuan ?? '-' }}</td>
+                                        <td class="p-2.5 text-gray-500">{{ $ev->employee?->department ?? '-' }}</td>
+                                        <td class="p-2.5 font-mono font-semibold text-indigo-700">
+                                            {{ $ev->waktu_checkin ? \Illuminate\Support\Carbon::parse($ev->waktu_checkin)->format('H:i') : '-' }} WIB
+                                        </td>
+                                        <td class="p-2.5 text-center">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                                <span>⚠️</span> Di Titik Kumpul
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <div class="py-12 text-center text-gray-400">
+                            <span class="text-4xl">🏢</span>
+                            <p class="font-semibold text-sm text-gray-700 mt-2">Tidak Ada Tamu Di Dalam Gedung</p>
+                            <p class="text-xs text-gray-400">Semua tamu tercatat telah melakukan check-out atau belum tiba.</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Footer Modal Evakuasi -->
+                <div class="p-4 bg-gray-50 border-t flex justify-between items-center text-xs text-gray-500">
+                    <span>Protokol Tanggap Darurat &bull; Tanggal: {{ today()->format('d/m/Y') }}</span>
+                    <button type="button" wire:click="closeEvacuationModal" class="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-semibold transition">
+                        Tutup Roster
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Toast Notifikasi Copy Pass Code -->
+    <div id="copy-toast" class="fixed bottom-5 right-5 z-50 bg-gray-900 text-white text-xs px-4 py-2.5 rounded-xl shadow-lg border border-gray-700 flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <span>📋</span>
+        <span id="copy-toast-text">Kode Pass berhasil disalin!</span>
+    </div>
+
     <script>
         function updateLiveClock() {
             const el = document.getElementById('live-clock');
@@ -867,5 +996,85 @@
         }
         setInterval(updateLiveClock, 1000);
         updateLiveClock();
+
+        // 🔔 Web Audio API Synthesizer (Nada Dering Lobi Ding-Dong)
+        let lobbyAudioEnabled = localStorage.getItem('lobbyflow_audio') !== 'false';
+
+        function updateAudioButtonUi() {
+            const icon = document.getElementById('audio-icon');
+            const label = document.getElementById('audio-label');
+            const btn = document.getElementById('audio-toggle-btn');
+            if (!icon || !label || !btn) return;
+            if (lobbyAudioEnabled) {
+                icon.textContent = '🔔';
+                label.textContent = 'Suara Lobi: On';
+                btn.classList.remove('bg-gray-100', 'text-gray-400');
+                btn.classList.add('bg-white', 'text-gray-700');
+            } else {
+                icon.textContent = '🔕';
+                label.textContent = 'Suara Lobi: Mute';
+                btn.classList.remove('bg-white', 'text-gray-700');
+                btn.classList.add('bg-gray-100', 'text-gray-400');
+            }
+        }
+
+        function toggleLobbyAudio() {
+            lobbyAudioEnabled = !lobbyAudioEnabled;
+            localStorage.setItem('lobbyflow_audio', lobbyAudioEnabled ? 'true' : 'false');
+            updateAudioButtonUi();
+        }
+
+        function playLobbyChime() {
+            if (!lobbyAudioEnabled) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+
+                // Tone 1: E5 (659.25 Hz)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
+                gain1.gain.setValueAtTime(0.18, ctx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start();
+                osc1.stop(ctx.currentTime + 0.45);
+
+                // Tone 2: C5 (523.25 Hz)
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(523.25, ctx.currentTime + 0.22);
+                gain2.gain.setValueAtTime(0.22, ctx.currentTime + 0.22);
+                gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.75);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(ctx.currentTime + 0.22);
+                osc2.stop(ctx.currentTime + 0.75);
+            } catch(e) {
+                console.log('Chime sound not played:', e);
+            }
+        }
+
+        window.addEventListener('play-chime', playLobbyChime);
+        document.addEventListener('DOMContentLoaded', updateAudioButtonUi);
+        document.addEventListener('livewire:navigated', updateAudioButtonUi);
+
+        // 📋 Toast Feedback Salin Pass Code
+        function showCopyToast(code) {
+            const toast = document.getElementById('copy-toast');
+            const text = document.getElementById('copy-toast-text');
+            if (!toast || !text) return;
+            text.textContent = `Kode Pass ${code} disalin ke clipboard!`;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
     </script>
 </div>

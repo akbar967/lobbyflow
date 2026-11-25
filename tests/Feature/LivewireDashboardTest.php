@@ -5,6 +5,7 @@ use App\Models\Employee;
 use App\Models\Visitor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 uses(RefreshDatabase::class);
 
@@ -258,4 +259,76 @@ test('livewire edits and saves announcement ticker', function () {
         ->call('saveAnnouncement')
         ->assertSee('Pengumuman lobi berhasil diperbarui!')
         ->assertSee('audit ISO 27001');
+});
+
+test('livewire exports today visitors to csv', function () {
+    $employee = Employee::create([
+        'name' => 'Budi Santoso',
+        'department' => 'HRD',
+        'email' => 'budi@company.com',
+    ]);
+
+    Visitor::create([
+        'name' => 'Ferry Salim',
+        'nama_tamu' => 'Ferry Salim',
+        'instansi' => 'PT Surya Harapan',
+        'employee_id' => $employee->id,
+        'purpose' => 'Kerjasama Bisnis',
+        'status' => 'INSIDE',
+    ]);
+
+    $component = Livewire::test(LobbyDashboard::class);
+    $response = $component->instance()->exportTodayCsv();
+
+    expect($response)->toBeInstanceOf(StreamedResponse::class);
+    expect($response->getStatusCode())->toBe(200);
+
+    ob_start();
+    $response->sendContent();
+    $csvContent = ob_get_clean();
+
+    expect($csvContent)->toContain('Ferry Salim');
+    expect($csvContent)->toContain('PT Surya Harapan');
+    expect($csvContent)->toContain('Kode Pass');
+});
+
+test('livewire opens and closes evacuation roster modal', function () {
+    $employee = Employee::create([
+        'name' => 'Rahmat Hidayat',
+        'department' => 'Operations',
+        'email' => 'rahmat@company.com',
+    ]);
+
+    Visitor::create([
+        'name' => 'Rangga Wijaya',
+        'nama_tamu' => 'Rangga Wijaya',
+        'instansi' => 'PT Megah Prima',
+        'employee_id' => $employee->id,
+        'purpose' => 'Inspeksi Gedung',
+        'status' => 'INSIDE',
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->call('openEvacuationModal')
+        ->assertSee('Daftar Evakuasi Darurat (K3 / HSE Muster Roll)')
+        ->assertSee('Rangga Wijaya')
+        ->assertSee('PT Megah Prima')
+        ->call('closeEvacuationModal')
+        ->assertDontSee('Daftar Evakuasi Darurat (K3 / HSE Muster Roll)');
+});
+
+test('livewire dispatches play-chime event on visitor save and checkout', function () {
+    $employee = Employee::create([
+        'name' => 'Siti Aminah',
+        'department' => 'Finance',
+        'email' => 'siti@company.com',
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->set('name', 'Nanda Pratama')
+        ->set('instansi', 'PT Cahaya Abadi')
+        ->set('employee_id', $employee->id)
+        ->set('purpose', 'Konsultasi Finansial')
+        ->call('save')
+        ->assertDispatched('play-chime');
 });
