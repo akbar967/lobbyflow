@@ -2,6 +2,7 @@
 
 use App\Livewire\LobbyDashboard;
 use App\Models\Employee;
+use App\Models\User;
 use App\Models\Visitor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -415,4 +416,70 @@ test('livewire opens and closes wifi and camera modals and kiosk mode', function
         ->assertSee('LobbyFlow Self-Service')
         ->call('toggleKioskMode')
         ->assertDontSee('LobbyFlow Self-Service');
+});
+
+test('admin sees executive command center and can delete visitor records', function () {
+    $admin = User::factory()->create([
+        'email' => 'admin_test@lobbyflow.com',
+        'role' => 'admin',
+    ]);
+
+    $employee = Employee::create([
+        'name' => 'Host Test',
+        'department' => 'Management',
+        'email' => 'host@company.com',
+    ]);
+
+    $visitor = Visitor::create([
+        'name' => 'Tamu Akan Dihapus',
+        'instansi' => 'PT Test',
+        'employee_id' => $employee->id,
+        'purpose' => 'Audit',
+        'status' => 'INSIDE',
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(LobbyDashboard::class)
+        ->assertSee('Admin Command Center')
+        ->assertSee('Pusat Supervisi dan Tata Kelola Admin')
+        ->assertSee('Kepatuhan Check-Out')
+        ->assertSee('Batalkan / Hapus Kunjungan (Admin)')
+        ->call('deleteVisitor', $visitor->id)
+        ->assertSee('berhasil dibatalkan/dihapus oleh Administrator');
+
+    expect(Visitor::find($visitor->id))->toBeNull();
+});
+
+test('receptionist sees front desk hub and cannot delete visitor records', function () {
+    $receptionist = User::factory()->create([
+        'email' => 'receptionist_test@lobbyflow.com',
+        'role' => 'receptionist',
+    ]);
+
+    $employee = Employee::create([
+        'name' => 'Host Resepsionis',
+        'department' => 'Lobby',
+        'email' => 'lobbyhost@company.com',
+    ]);
+
+    $visitor = Visitor::create([
+        'name' => 'Tamu Tetap Aman',
+        'instansi' => 'PT Aman',
+        'employee_id' => $employee->id,
+        'purpose' => 'Meeting',
+        'status' => 'INSIDE',
+    ]);
+
+    $this->actingAs($receptionist);
+
+    Livewire::test(LobbyDashboard::class)
+        ->assertSee('Meja Resepsionis Lobi')
+        ->assertSee('Pusat Layanan Meja Resepsionis')
+        ->assertDontSee('Batalkan / Hapus Kunjungan (Admin)')
+        ->call('deleteVisitor', $visitor->id)
+        ->assertSee('Akses Terbatas: Hanya Administrator');
+
+    // Visitor should NOT be deleted
+    expect(Visitor::find($visitor->id))->not->toBeNull();
 });

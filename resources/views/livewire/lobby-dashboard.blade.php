@@ -4,8 +4,17 @@
         <div class="flex items-center gap-3">
             <img src="{{ asset('logo.svg') }}" alt="LobbyFlow Logo" class="w-10 h-10 rounded-xl shadow-sm">
             <div>
-                <h1 class="text-2xl font-bold text-indigo-600 leading-tight">LobbyFlow - Manajemen Tamu</h1>
-                <p class="text-xs text-gray-500 mt-0.5">Sistem resepsionis cerdas dan pemantauan kunjungan tamu secara real-time &bull; Powered by Livewire</p>
+                @if(Auth::user()?->role === 'admin')
+                    <h1 class="text-2xl font-black text-purple-900 leading-tight flex items-center gap-2">
+                        <span>🛡️</span> LobbyFlow &bull; Admin Command Center
+                    </h1>
+                    <p class="text-xs text-purple-700 font-medium mt-0.5">Pusat supervisi alur tamu eksekutif, analitik kepatuhan, audit keselamatan K3, dan kontrol master data</p>
+                @else
+                    <h1 class="text-2xl font-bold text-indigo-600 leading-tight flex items-center gap-2">
+                        <span>🛎️</span> LobbyFlow &bull; Meja Resepsionis Lobi
+                    </h1>
+                    <p class="text-xs text-gray-500 mt-0.5">Sistem operasional pendaftaran tamu cerdas, cetak pass identitas, dan pelayanan lobi real-time</p>
+                @endif
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -131,125 +140,240 @@
     @endif
 
     <!-- 🚀 Pusat Fitur Unggulan & Quick Action Hub (Enterprise Feature Hub) -->
-    <div class="mb-6 bg-white rounded-2xl border border-indigo-100 shadow-sm overflow-hidden">
-        <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 p-4 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl border border-white/20 shadow-inner">
-                    ⚡
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h3 class="text-sm font-extrabold tracking-wide uppercase">Pusat Fitur Unggulan (Feature Showcase Hub)</h3>
-                        <span class="text-[10px] bg-emerald-500/30 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30 animate-pulse">12 Fitur Siap Pakai</span>
+    <div class="mb-6 bg-white rounded-2xl border {{ Auth::user()?->isAdmin() ? 'border-purple-200' : 'border-indigo-100' }} shadow-sm overflow-hidden">
+        @if(Auth::user()?->isAdmin())
+            <div class="bg-gradient-to-r from-purple-900 via-indigo-950 to-slate-900 p-4 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-xl border border-purple-400/30 shadow-inner">
+                        🛡️
                     </div>
-                    <p class="text-xs text-indigo-100 mt-0.5">
-                        Fitur-fitur otomatis sistem LobbyFlow — klik kartu aksi cepat untuk langsung mencoba atau mengeksekusi fitur
-                    </p>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-extrabold tracking-wide uppercase">Pusat Supervisi dan Tata Kelola Admin (Executive Hub)</h3>
+                            <span class="text-[10px] bg-purple-400/30 text-purple-200 font-bold px-2 py-0.5 rounded-full border border-purple-400/30">Otoritas Penuh</span>
+                        </div>
+                        <p class="text-xs text-purple-200 mt-0.5">
+                            Supervisi alur tamu real-time, audit keselamatan K3, analitik eksekutif AI, manajemen master data, dan kontrol keamanan
+                        </p>
+                    </div>
                 </div>
-            </div>
-            <div class="flex items-center gap-2">
-                <button type="button" wire:click="openFeaturesModal" class="inline-flex items-center gap-1.5 text-xs font-bold bg-white text-indigo-900 hover:bg-indigo-50 px-3.5 py-2 rounded-xl transition shadow-md whitespace-nowrap">
-                    <span>✨ Direktori 12 Fitur Lengkap</span>
-                    <span>&rarr;</span>
-                </button>
-                @if(Auth::user()?->role === 'admin')
-                    <a href="{{ route('reports.index') }}" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 hover:bg-white/25 text-white px-3.5 py-2 rounded-xl border border-white/20 transition whitespace-nowrap">
-                        <span>📊 Analitik & PDF</span>
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('reports.index') }}" class="inline-flex items-center gap-1.5 text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 px-3.5 py-2 rounded-xl transition shadow-md whitespace-nowrap">
+                        <span>📊 Laporan Analitik & AI</span>
+                        <span>&rarr;</span>
                     </a>
-                @endif
+                    <button type="button" wire:click="openFeaturesModal" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 rounded-xl border border-white/20 transition whitespace-nowrap">
+                        <span>✨ Direktori 12 Fitur</span>
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <!-- 8 Interactive Feature Action Cards -->
-        <div class="p-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 bg-slate-50/60">
-            <!-- 1. Smart Scan OCR -->
-            <button type="button" wire:click="simulateAiScan" class="p-2.5 bg-white hover:bg-purple-50/60 rounded-xl border border-gray-200 hover:border-purple-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold shadow-inner">📷</span>
-                    <span class="text-[8px] bg-purple-100 text-purple-800 font-extrabold px-1 py-0.5 rounded uppercase">AI Vision</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-purple-700">Smart Scan</h4>
-                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Ekstraksi KTP</p>
-                <span class="mt-1.5 inline-flex items-center text-[9px] text-purple-600 font-bold">Coba Scan &rarr;</span>
-            </button>
+            <!-- 8 Interactive Admin Feature Action Cards -->
+            <div class="p-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 bg-purple-50/20">
+                <!-- 1. Analitik Eksekutif -->
+                <a href="{{ route('reports.index') }}" class="p-2.5 bg-white hover:bg-purple-50 rounded-xl border border-purple-200 hover:border-purple-400 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150 block">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-800 flex items-center justify-center text-sm font-bold shadow-inner">📊</span>
+                        <span class="text-[8px] bg-purple-100 text-purple-900 font-extrabold px-1 py-0.5 rounded uppercase">AI & PDF</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-purple-700">Analitik KPI</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Grafik & Tren</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-purple-700 font-bold">Buka Laporan &rarr;</span>
+                </a>
 
-            <!-- 2. Quick Pass Scanner -->
-            <button type="button" onclick="const el = document.getElementById('quick-pass-input'); if(el) { el.focus(); el.scrollIntoView({behavior:'smooth'}); }" class="p-2.5 bg-white hover:bg-amber-50/60 rounded-xl border border-gray-200 hover:border-amber-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold shadow-inner">⚡</span>
-                    <span class="text-[8px] bg-amber-100 text-amber-800 font-extrabold px-1 py-0.5 rounded uppercase">Pass ID</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-amber-700">Quick Pass</h4>
-                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Scan pass 1-detik</p>
-                <span class="mt-1.5 inline-flex items-center text-[9px] text-amber-600 font-bold">Fokus &rarr;</span>
-            </button>
+                <!-- 2. Audit Evakuasi K3 -->
+                <button type="button" wire:click="openEvacuationModal" class="p-2.5 bg-white hover:bg-rose-50 rounded-xl border border-rose-200 hover:border-rose-400 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-bold shadow-inner">🚨</span>
+                        <span class="text-[8px] bg-rose-100 text-rose-800 font-extrabold px-1 py-0.5 rounded uppercase">Audit K3</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-rose-700">Evakuasi K3</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Roster Darurat</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-rose-600 font-bold">Audit Roster &rarr;</span>
+                </button>
 
-            <!-- 3. Kamera QR Scanner -->
-            <button type="button" wire:click="openCameraModal" class="p-2.5 bg-white hover:bg-indigo-50/60 rounded-xl border border-gray-200 hover:border-indigo-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold shadow-inner">📸</span>
-                    <span class="text-[8px] bg-indigo-100 text-indigo-800 font-extrabold px-1 py-0.5 rounded uppercase">Kamera QR</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-indigo-700">Scan Kamera</h4>
-                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Webcam Scanner</p>
-                <span class="mt-1.5 inline-flex items-center text-[9px] text-indigo-600 font-bold">Buka Kamera &rarr;</span>
-            </button>
+                <!-- 3. Master Pegawai -->
+                <button type="button" wire:click="$set('showManageEmployeesModal', true)" class="p-2.5 bg-white hover:bg-indigo-50 rounded-xl border border-indigo-200 hover:border-indigo-400 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold shadow-inner">👔</span>
+                        <span class="text-[8px] bg-indigo-100 text-indigo-800 font-extrabold px-1 py-0.5 rounded uppercase">Master</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-indigo-700">Master Host</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Kelola Kontak & WA</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-indigo-600 font-bold">Kelola Staf &rarr;</span>
+                </button>
 
-            <!-- 4. Roster Evakuasi K3 -->
-            <button type="button" wire:click="openEvacuationModal" class="p-2.5 bg-white hover:bg-rose-50/60 rounded-xl border border-gray-200 hover:border-rose-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-bold shadow-inner">🚨</span>
-                    <span class="text-[8px] bg-rose-100 text-rose-800 font-extrabold px-1 py-0.5 rounded uppercase">K3 Safety</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-rose-700">Evakuasi K3</h4>
-                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Roster darurat</p>
-                <span class="mt-1.5 inline-flex items-center text-[9px] text-rose-600 font-bold">Buka Roster &rarr;</span>
-            </button>
+                <!-- 4. Ekspor CSV Hari Ini -->
+                <button type="button" wire:click="exportTodayCsv" class="p-2.5 bg-white hover:bg-teal-50 rounded-xl border border-teal-200 hover:border-teal-400 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-sm font-bold shadow-inner">📥</span>
+                        <span class="text-[8px] bg-teal-100 text-teal-800 font-extrabold px-1 py-0.5 rounded uppercase">Excel</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-teal-700">Ekspor CSV</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Unduh Rekap</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-teal-600 font-bold">Unduh File &rarr;</span>
+                </button>
 
-            <!-- 5. Wi-Fi Tamu -->
-            <button type="button" wire:click="openWifiModal" class="p-2.5 bg-white hover:bg-blue-50/60 rounded-xl border border-gray-200 hover:border-blue-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold shadow-inner">📶</span>
-                    <span class="text-[8px] bg-blue-100 text-blue-800 font-extrabold px-1 py-0.5 rounded uppercase">Voucher</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-blue-700">Wi-Fi Tamu</h4>
-                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Akses & QR Code</p>
-                <span class="mt-1.5 inline-flex items-center text-[9px] text-blue-600 font-bold">Lihat Wi-Fi &rarr;</span>
-            </button>
+                <!-- 5. Live QR Scanner -->
+                <button type="button" wire:click="openCameraModal" class="p-2.5 bg-white hover:bg-slate-50 rounded-xl border border-gray-200 hover:border-slate-400 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm font-bold shadow-inner">📸</span>
+                        <span class="text-[8px] bg-slate-100 text-slate-800 font-extrabold px-1 py-0.5 rounded uppercase">Scanner</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-slate-800">Scan Barcode</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Kamera QR Pass</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-slate-600 font-bold">Buka Kamera &rarr;</span>
+                </button>
 
-            <!-- 6. Notifikasi WhatsApp -->
-            <button type="button" wire:click="generateDemoVisitors" class="p-2.5 bg-white hover:bg-emerald-50/60 rounded-xl border border-gray-200 hover:border-emerald-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold shadow-inner">💬</span>
-                    <span class="text-[8px] bg-emerald-100 text-emerald-800 font-extrabold px-1 py-0.5 rounded uppercase">WA Alert</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-emerald-700">WhatsApp</h4>
-                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Notif ke host</p>
-                <span class="mt-1.5 inline-flex items-center text-[9px] text-emerald-600 font-bold">Simulasi Lobi &rarr;</span>
-            </button>
+                <!-- 6. Wi-Fi Tamu -->
+                <button type="button" wire:click="openWifiModal" class="p-2.5 bg-white hover:bg-blue-50 rounded-xl border border-blue-200 hover:border-blue-400 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold shadow-inner">📶</span>
+                        <span class="text-[8px] bg-blue-100 text-blue-800 font-extrabold px-1 py-0.5 rounded uppercase">Voucher</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-blue-700">Wi-Fi Tamu</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Kredensial Jaringan</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-blue-600 font-bold">Lihat Voucher &rarr;</span>
+                </button>
 
-            <!-- 7. Ekspor Laporan CSV -->
-            <button type="button" wire:click="exportTodayCsv" class="p-2.5 bg-white hover:bg-teal-50/60 rounded-xl border border-gray-200 hover:border-teal-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-sm font-bold shadow-inner">📥</span>
-                    <span class="text-[8px] bg-teal-100 text-teal-800 font-extrabold px-1 py-0.5 rounded uppercase">Excel</span>
-                </div>
-                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-teal-700">Ekspor CSV</h4>
-                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Unduh rekap hari ini</p>
-                <span class="mt-1.5 inline-flex items-center text-[9px] text-teal-600 font-bold">Unduh File &rarr;</span>
-            </button>
+                <!-- 7. Mode Kiosk Lobi -->
+                <button type="button" wire:click="toggleKioskMode" class="p-2.5 bg-white hover:bg-amber-50 rounded-xl border border-amber-200 hover:border-amber-400 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold shadow-inner">🖥️</span>
+                        <span class="text-[8px] bg-amber-100 text-amber-800 font-extrabold px-1 py-0.5 rounded uppercase">Kiosk</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-amber-700">Mode Kiosk</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Tablet Mandiri</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-amber-600 font-bold">Luncurkan &rarr;</span>
+                </button>
 
-            <!-- 8. Kelola Pegawai -->
-            <button type="button" wire:click="$set('showManageEmployeesModal', true)" class="p-2.5 bg-white hover:bg-slate-50 rounded-xl border border-gray-200 hover:border-slate-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-1.5">
-                    <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm font-bold shadow-inner">👔</span>
-                    <span class="text-[8px] bg-slate-100 text-slate-800 font-extrabold px-1 py-0.5 rounded uppercase">Master</span>
+                <!-- 8. Direktori Fitur Lengkap -->
+                <button type="button" wire:click="openFeaturesModal" class="p-2.5 bg-white hover:bg-emerald-50 rounded-xl border border-emerald-200 hover:border-emerald-400 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold shadow-inner">✨</span>
+                        <span class="text-[8px] bg-emerald-100 text-emerald-800 font-extrabold px-1 py-0.5 rounded uppercase">Katalog</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-emerald-700">Semua Fitur</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Direktori 12 Fitur</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-emerald-600 font-bold">Lihat Semua &rarr;</span>
+                </button>
+            </div>
+        @else
+            <!-- Receptionist Hub Header -->
+            <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-blue-900 p-4 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl border border-white/20 shadow-inner">
+                        🛎️
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-extrabold tracking-wide uppercase">Pusat Layanan Meja Resepsionis (Front-Desk Hub)</h3>
+                            <span class="text-[10px] bg-emerald-500/30 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30">Operasional Aktif</span>
+                        </div>
+                        <p class="text-xs text-indigo-100 mt-0.5">
+                            Alat bantu operasional lobi: Smart Scan KTP, Quick Pass barcode, webcam QR scanner, Wi-Fi voucher, dan cetak badge
+                        </p>
+                    </div>
                 </div>
-                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-slate-800">Pegawai</h4>
-                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Direktori host</p>
-                <span class="mt-1.5 inline-flex items-center text-[9px] text-slate-600 font-bold">Kelola Staf &rarr;</span>
-            </button>
-        </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" wire:click="openFeaturesModal" class="inline-flex items-center gap-1.5 text-xs font-bold bg-white text-indigo-900 hover:bg-indigo-50 px-3.5 py-2 rounded-xl transition shadow-md whitespace-nowrap">
+                        <span>✨ Direktori 12 Fitur Lengkap</span>
+                        <span>&rarr;</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 8 Interactive Receptionist Feature Action Cards -->
+            <div class="p-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 bg-slate-50/60">
+                <!-- 1. Smart Scan OCR -->
+                <button type="button" wire:click="simulateAiScan" class="p-2.5 bg-white hover:bg-purple-50/60 rounded-xl border border-gray-200 hover:border-purple-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold shadow-inner">📷</span>
+                        <span class="text-[8px] bg-purple-100 text-purple-800 font-extrabold px-1 py-0.5 rounded uppercase">AI Vision</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-purple-700">Smart Scan</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Ekstraksi KTP</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-purple-600 font-bold">Coba Scan &rarr;</span>
+                </button>
+
+                <!-- 2. Quick Pass Scanner -->
+                <button type="button" onclick="const el = document.getElementById('quick-pass-input'); if(el) { el.focus(); el.scrollIntoView({behavior:'smooth'}); }" class="p-2.5 bg-white hover:bg-amber-50/60 rounded-xl border border-gray-200 hover:border-amber-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold shadow-inner">⚡</span>
+                        <span class="text-[8px] bg-amber-100 text-amber-800 font-extrabold px-1 py-0.5 rounded uppercase">Pass ID</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-amber-700">Quick Pass</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Scan pass 1-detik</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-amber-600 font-bold">Fokus &rarr;</span>
+                </button>
+
+                <!-- 3. Kamera QR Scanner -->
+                <button type="button" wire:click="openCameraModal" class="p-2.5 bg-white hover:bg-indigo-50/60 rounded-xl border border-gray-200 hover:border-indigo-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold shadow-inner">📸</span>
+                        <span class="text-[8px] bg-indigo-100 text-indigo-800 font-extrabold px-1 py-0.5 rounded uppercase">Kamera QR</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-indigo-700">Scan Kamera</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Webcam Scanner</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-indigo-600 font-bold">Buka Kamera &rarr;</span>
+                </button>
+
+                <!-- 4. Wi-Fi Tamu -->
+                <button type="button" wire:click="openWifiModal" class="p-2.5 bg-white hover:bg-blue-50/60 rounded-xl border border-gray-200 hover:border-blue-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold shadow-inner">📶</span>
+                        <span class="text-[8px] bg-blue-100 text-blue-800 font-extrabold px-1 py-0.5 rounded uppercase">Voucher</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-blue-700">Wi-Fi Tamu</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Akses & QR Code</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-blue-600 font-bold">Lihat Wi-Fi &rarr;</span>
+                </button>
+
+                <!-- 5. Roster Evakuasi K3 -->
+                <button type="button" wire:click="openEvacuationModal" class="p-2.5 bg-white hover:bg-rose-50/60 rounded-xl border border-gray-200 hover:border-rose-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-bold shadow-inner">🚨</span>
+                        <span class="text-[8px] bg-rose-100 text-rose-800 font-extrabold px-1 py-0.5 rounded uppercase">K3 Safety</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-rose-700">Evakuasi K3</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Roster darurat</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-rose-600 font-bold">Buka Roster &rarr;</span>
+                </button>
+
+                <!-- 6. Mode Kiosk Tamu -->
+                <button type="button" wire:click="toggleKioskMode" class="p-2.5 bg-white hover:bg-amber-50/60 rounded-xl border border-gray-200 hover:border-amber-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold shadow-inner">🖥️</span>
+                        <span class="text-[8px] bg-amber-100 text-amber-800 font-extrabold px-1 py-0.5 rounded uppercase">Kiosk</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-amber-700">Mode Kiosk</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Self Check-In</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-amber-600 font-bold">Aktifkan &rarr;</span>
+                </button>
+
+                <!-- 7. Ekspor Rekap CSV -->
+                <button type="button" wire:click="exportTodayCsv" class="p-2.5 bg-white hover:bg-teal-50/60 rounded-xl border border-gray-200 hover:border-teal-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-sm font-bold shadow-inner">📥</span>
+                        <span class="text-[8px] bg-teal-100 text-teal-800 font-extrabold px-1 py-0.5 rounded uppercase">Excel</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-teal-700">Ekspor CSV</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Unduh rekap hari ini</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-teal-600 font-bold">Unduh File &rarr;</span>
+                </button>
+
+                <!-- 8. Kelola Pegawai -->
+                <button type="button" wire:click="$set('showManageEmployeesModal', true)" class="p-2.5 bg-white hover:bg-slate-50 rounded-xl border border-gray-200 hover:border-slate-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm font-bold shadow-inner">👔</span>
+                        <span class="text-[8px] bg-slate-100 text-slate-800 font-extrabold px-1 py-0.5 rounded uppercase">Master</span>
+                    </div>
+                    <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-slate-800">Pegawai</h4>
+                    <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Direktori host</p>
+                    <span class="mt-1.5 inline-flex items-center text-[9px] text-slate-600 font-bold">Kelola Staf &rarr;</span>
+                </button>
+            </div>
+        @endif
     </div>
 
     <!-- Pesan Sukses & Error -->
@@ -279,61 +403,130 @@
 
     <!-- 📊 Live Lobby Stats Counters (Metrik Real-Time Hari Ini) -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Hari Ini</p>
-                <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ $stats['total_today'] }}</h3>
-                <span class="text-[11px] text-gray-400">Tamu Terdaftar</span>
-            </div>
-            <div class="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
-                👥
-            </div>
-        </div>
-
-        <div class="bg-white p-4 rounded-xl border border-emerald-200 shadow-sm flex items-center justify-between">
-            <div>
-                <div class="flex items-center gap-1.5">
-                    <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Di Gedung</p>
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        @if(Auth::user()?->isAdmin())
+            <!-- Admin Metric 1: Total Tamu Hari Ini & Bulan Ini -->
+            <div class="bg-white p-4 rounded-xl border border-purple-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-purple-700 uppercase tracking-wider">Total Tamu Hari Ini</p>
+                    <h3 class="text-2xl font-extrabold text-purple-900 mt-0.5">{{ $stats['total_today'] }}</h3>
+                    <span class="text-[11px] text-purple-600 font-medium">Bulan Ini: <strong>{{ $stats['total_this_month'] }}</strong> kunjungan</span>
                 </div>
-                <h3 class="text-2xl font-extrabold text-emerald-700 mt-0.5">{{ $stats['inside_now'] }}</h3>
-                <span class="text-[11px] text-emerald-600 font-medium">Sedang Berkunjung</span>
+                <div class="w-11 h-11 bg-purple-50 text-purple-700 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    👥
+                </div>
             </div>
-            <div class="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
-                🏢
-            </div>
-        </div>
 
-        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Sudah Check-Out</p>
-                <h3 class="text-2xl font-extrabold text-gray-800 mt-0.5">{{ $stats['checked_out_today'] }}</h3>
-                <span class="text-[11px] text-gray-400">Kunjungan Selesai</span>
+            <!-- Admin Metric 2: Headcount Tamu di Gedung -->
+            <div class="bg-white p-4 rounded-xl border border-emerald-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Sedang di Gedung</p>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    </div>
+                    <h3 class="text-2xl font-extrabold text-emerald-700 mt-0.5">{{ $stats['inside_now'] }}</h3>
+                    <span class="text-[11px] text-emerald-600 font-medium">Headcount Aktif Keselamatan</span>
+                </div>
+                <div class="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    🏢
+                </div>
             </div>
-            <div class="w-11 h-11 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
-                🏁
-            </div>
-        </div>
 
-        <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Host / Pegawai</p>
-                <h3 class="text-2xl font-extrabold text-indigo-600 mt-0.5">{{ $stats['total_employees'] }}</h3>
-                <button type="button" class="text-[11px] text-indigo-500 font-medium hover:underline flex items-center gap-0.5" wire:click="$set('showManageEmployeesModal', true)">
-                    Kelola Pegawai &rarr;
-                </button>
+            <!-- Admin Metric 3: Tamu Prioritas VIP -->
+            <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-amber-700 uppercase tracking-wider">Tamu VIP di Gedung</p>
+                    <h3 class="text-2xl font-extrabold text-amber-800 mt-0.5">{{ $stats['vip_count'] }}</h3>
+                    <span class="text-[11px] text-amber-600 font-medium">Prioritas Protokoler Khusus</span>
+                </div>
+                <div class="w-11 h-11 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    ⭐
+                </div>
             </div>
-            <div class="w-11 h-11 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
-                👔
+
+            <!-- Admin Metric 4: Kepatuhan Check-Out -->
+            <div class="bg-white p-4 rounded-xl border border-indigo-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-indigo-700 uppercase tracking-wider">Kepatuhan Check-Out</p>
+                    <h3 class="text-2xl font-extrabold text-indigo-800 mt-0.5">{{ $stats['checkout_rate'] }}%</h3>
+                    <span class="text-[11px] text-indigo-600 font-medium">{{ $stats['checked_out_today'] }} dari {{ $stats['total_today'] }} tamu selesai</span>
+                </div>
+                <div class="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    📈
+                </div>
             </div>
-        </div>
+        @else
+            <!-- Receptionist Metric 1: Total Tamu Hari Ini -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Hari Ini</p>
+                    <h3 class="text-2xl font-extrabold text-gray-900 mt-0.5">{{ $stats['total_today'] }}</h3>
+                    <span class="text-[11px] text-gray-400">Tamu Terdaftar</span>
+                </div>
+                <div class="w-11 h-11 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    👥
+                </div>
+            </div>
+
+            <!-- Receptionist Metric 2: Di Gedung -->
+            <div class="bg-white p-4 rounded-xl border border-emerald-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-1.5">
+                        <p class="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Di Gedung</p>
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    </div>
+                    <h3 class="text-2xl font-extrabold text-emerald-700 mt-0.5">{{ $stats['inside_now'] }}</h3>
+                    <span class="text-[11px] text-emerald-600 font-medium">Sedang Berkunjung</span>
+                </div>
+                <div class="w-11 h-11 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    🏢
+                </div>
+            </div>
+
+            <!-- Receptionist Metric 3: Sudah Check-Out -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Sudah Check-Out</p>
+                    <h3 class="text-2xl font-extrabold text-gray-800 mt-0.5">{{ $stats['checked_out_today'] }}</h3>
+                    <span class="text-[11px] text-gray-400">Kunjungan Selesai</span>
+                </div>
+                <div class="w-11 h-11 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    🏁
+                </div>
+            </div>
+
+            <!-- Receptionist Metric 4: Host / Pegawai -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Host / Pegawai</p>
+                    <h3 class="text-2xl font-extrabold text-indigo-600 mt-0.5">{{ $stats['total_employees'] }}</h3>
+                    <button type="button" class="text-[11px] text-indigo-500 font-medium hover:underline flex items-center gap-0.5" wire:click="$set('showManageEmployeesModal', true)">
+                        Kelola Pegawai &rarr;
+                    </button>
+                </div>
+                <div class="w-11 h-11 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl shadow-inner">
+                    👔
+                </div>
+            </div>
+        @endif
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <!-- Form Check-In Tamu (Kiri) -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-            <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center gap-2">
-                <span>✍️</span> Check-In Tamu Baru
+            <h2 class="text-lg font-bold mb-4 text-gray-800 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span>✍️</span> Check-In Tamu Baru
+                </div>
+                @if(Auth::user()?->isAdmin())
+                    <span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full border border-purple-200">
+                        🛡️ Mode Admin
+                    </span>
+                @else
+                    <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-2 py-0.5 rounded-full border border-indigo-200">
+                        🛎️ Front Desk
+                    </span>
+                @endif
+            </h2>
             </h2>
 
             <form wire:submit="save" class="space-y-4">
@@ -769,12 +962,14 @@
                                             </svg>
                                         </button>
 
-                                        <!-- Tombol Hapus/Batal Kunjungan -->
-                                        <button type="button" wire:click="deleteVisitor({{ $v->id }})" wire:confirm="Batalkan dan hapus data kunjungan tamu {{ $v->name }}?" class="p-1.5 text-gray-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition" title="Batalkan / Hapus Kunjungan">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
+                                        <!-- Tombol Hapus/Batal Kunjungan (Hanya Administrator) -->
+                                        @if(Auth::user()?->isAdmin())
+                                            <button type="button" wire:click="deleteVisitor({{ $v->id }})" wire:confirm="Batalkan dan hapus data kunjungan tamu {{ $v->name }}?" class="p-1.5 text-gray-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition" title="Batalkan / Hapus Kunjungan (Admin)">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

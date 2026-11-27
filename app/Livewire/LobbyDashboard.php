@@ -358,10 +358,16 @@ class LobbyDashboard extends Component
 
     public function deleteVisitor(int $id): void
     {
+        if (Auth::check() && ! Auth::user()->isAdmin()) {
+            $this->errorMessage = 'Akses Terbatas: Hanya Administrator yang memiliki hak akses menghapus riwayat kunjungan tamu secara permanen.';
+
+            return;
+        }
+
         $visitor = Visitor::findOrFail($id);
         $name = $visitor->name;
         $visitor->delete();
-        $this->successMessage = "Data kunjungan tamu {$name} berhasil dibatalkan/dihapus.";
+        $this->successMessage = "Data kunjungan tamu {$name} berhasil dibatalkan/dihapus oleh Administrator.";
     }
 
     public function addEmployee(): void
@@ -874,13 +880,20 @@ class LobbyDashboard extends Component
 
         $employees = Employee::orderBy('name')->get();
 
+        $totalToday = Visitor::whereDate('created_at', today())->count();
+        $checkedOutToday = Visitor::whereDate('created_at', today())->where('status', 'CHECKED_OUT')->count();
+        $checkoutRate = $totalToday > 0 ? round(($checkedOutToday / $totalToday) * 100) : 100;
+        $totalThisMonth = Visitor::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count();
+
         $stats = [
-            'total_today' => Visitor::whereDate('created_at', today())->count(),
+            'total_today' => $totalToday,
             'inside_now' => Visitor::where('status', 'INSIDE')->count(),
             'scheduled' => Visitor::where('status', 'SCHEDULED')->count(),
-            'checked_out_today' => Visitor::whereDate('created_at', today())->where('status', 'CHECKED_OUT')->count(),
+            'checked_out_today' => $checkedOutToday,
             'vip_count' => Visitor::where('is_vip', true)->where('status', 'INSIDE')->count(),
             'total_employees' => $employees->count(),
+            'checkout_rate' => $checkoutRate,
+            'total_this_month' => $totalThisMonth,
         ];
 
         $evacuationVisitors = $this->showEvacuationModal
