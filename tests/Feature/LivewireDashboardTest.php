@@ -342,3 +342,77 @@ test('livewire opens and closes features directory modal', function () {
         ->call('closeFeaturesModal')
         ->assertDontSee('Katalog modul dan kapabilitas sistem LobbyFlow');
 });
+
+test('livewire supports VIP visitor creation and toggle', function () {
+    $employee = Employee::create([
+        'name' => 'Dr. Gunawan',
+        'department' => 'Direksi',
+        'email' => 'gunawan@company.com',
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->set('name', 'Tamu VIP Menteri')
+        ->set('instansi', 'Kementerian Keuangan')
+        ->set('employee_id', $employee->id)
+        ->set('purpose', 'Kunjungan Kerja')
+        ->set('is_vip', true)
+        ->call('save')
+        ->assertSee('Tamu berhasil check-in!');
+
+    $visitor = Visitor::where('name', 'Tamu VIP Menteri')->first();
+    expect($visitor->is_vip)->toBeTrue();
+
+    Livewire::test(LobbyDashboard::class)
+        ->call('toggleVip', $visitor->id);
+
+    expect($visitor->fresh()->is_vip)->toBeFalse();
+});
+
+test('livewire executes batch check-out for multiple selected visitors', function () {
+    $employee = Employee::create([
+        'name' => 'Hendra',
+        'department' => 'GA',
+        'email' => 'hendra@company.com',
+    ]);
+
+    $v1 = Visitor::create([
+        'name' => 'Delegasi 1',
+        'instansi' => 'PT Rombongan',
+        'employee_id' => $employee->id,
+        'purpose' => 'Studi Banding',
+        'status' => 'INSIDE',
+    ]);
+
+    $v2 = Visitor::create([
+        'name' => 'Delegasi 2',
+        'instansi' => 'PT Rombongan',
+        'employee_id' => $employee->id,
+        'purpose' => 'Studi Banding',
+        'status' => 'INSIDE',
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->set('selectedVisitors', [(string) $v1->id, (string) $v2->id])
+        ->call('batchCheckout')
+        ->assertSee('Berhasil melakukan check-out massal untuk 2 tamu!');
+
+    expect($v1->fresh()->status)->toBe('CHECKED_OUT');
+    expect($v2->fresh()->status)->toBe('CHECKED_OUT');
+});
+
+test('livewire opens and closes wifi and camera modals and kiosk mode', function () {
+    Livewire::test(LobbyDashboard::class)
+        ->call('openWifiModal')
+        ->assertSee('Akses Wi-Fi Tamu Gedung')
+        ->assertSee('LobbyFlow-Guest')
+        ->call('closeWifiModal')
+        ->assertDontSee('Akses Wi-Fi Tamu Gedung')
+        ->call('openCameraModal')
+        ->assertSee('Kamera Scanner Pass Tamu')
+        ->call('closeCameraModal')
+        ->assertDontSee('Kamera Scanner Pass Tamu')
+        ->call('toggleKioskMode')
+        ->assertSee('LobbyFlow Self-Service')
+        ->call('toggleKioskMode')
+        ->assertDontSee('LobbyFlow Self-Service');
+});

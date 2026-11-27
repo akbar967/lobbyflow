@@ -45,18 +45,18 @@
     <!-- Desain ID Card Badge Tamu -->
     <div class="badge-card w-full max-w-sm bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden relative">
         <!-- Lubang Lanyard Clip Slot -->
-        <div class="flex justify-center pt-3 pb-1 bg-indigo-700">
-            <div class="w-14 h-2.5 bg-indigo-950/40 rounded-full border border-indigo-400/30"></div>
+        <div class="flex justify-center pt-3 pb-1 {{ $visitor->is_vip ? 'bg-amber-600' : 'bg-indigo-700' }}">
+            <div class="w-14 h-2.5 bg-black/30 rounded-full border border-white/20"></div>
         </div>
 
         <!-- Header Badge -->
-        <div class="bg-indigo-700 text-white px-6 py-4 text-center">
+        <div class="{{ $visitor->is_vip ? 'bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 text-slate-950' : 'bg-indigo-700 text-white' }} px-6 py-4 text-center">
             <div class="flex items-center justify-center gap-2 mb-1">
-                <img src="{{ asset('favicon.svg') }}" alt="Logo" class="w-6 h-6 rounded-md shadow-sm">
+                <img src="{{ asset('logo.svg') }}" alt="Logo" class="w-7 h-7 rounded-lg shadow-sm">
                 <span class="font-extrabold tracking-wider text-base uppercase">LOBBYFLOW</span>
             </div>
-            <div class="inline-block bg-indigo-900/60 text-indigo-200 text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-indigo-400/30">
-                VISITOR PASS
+            <div class="inline-block {{ $visitor->is_vip ? 'bg-slate-900 text-amber-300 border-amber-400/50' : 'bg-indigo-900/60 text-indigo-200 border-indigo-400/30' }} text-xs font-black uppercase tracking-widest px-3.5 py-1 rounded-full border shadow-sm">
+                {{ $visitor->is_vip ? '⭐ VIP VISITOR PASS' : 'VISITOR PASS' }}
             </div>
         </div>
 
@@ -64,9 +64,13 @@
         <div class="p-6 text-center space-y-4">
             <!-- Foto / Inisial Avatar -->
             <div class="flex justify-center">
-                <div class="w-16 h-16 rounded-full bg-indigo-50 border-2 border-indigo-200 text-indigo-700 flex items-center justify-center font-bold text-2xl shadow-inner">
-                    {{ strtoupper(substr($visitor->name, 0, 1)) }}
-                </div>
+                @if($visitor->id_card_image)
+                    <img src="{{ Storage::url($visitor->id_card_image) }}" alt="Foto Tamu" class="w-16 h-16 rounded-full object-cover border-2 {{ $visitor->is_vip ? 'border-amber-400' : 'border-indigo-400' }} shadow-md">
+                @else
+                    <div class="w-16 h-16 rounded-full {{ $visitor->is_vip ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-indigo-50 border-indigo-200 text-indigo-700' }} border-2 flex items-center justify-center font-bold text-2xl shadow-inner">
+                        {{ strtoupper(substr($visitor->name, 0, 1)) }}
+                    </div>
+                @endif
             </div>
 
             <!-- Identitas Tamu -->
@@ -112,6 +116,16 @@
                         {{ $cIn ? \Carbon\Carbon::parse($cIn)->format('d M Y, H:i') : '-' }}
                     </span>
                 </div>
+            </div>
+
+            <!-- Akses Wi-Fi Tamu (Guest Wi-Fi Voucher) -->
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center text-[11px] space-y-0.5">
+                <div class="flex items-center justify-center gap-1.5 font-bold text-gray-800">
+                    <span>📶</span> Akses Wi-Fi Tamu
+                </div>
+                <p class="text-gray-600 font-mono text-[10px]">
+                    SSID: <strong class="text-indigo-700">LobbyFlow-Guest</strong> &bull; Pass: <strong class="text-indigo-700">Tamu{{ date('Y') }}!</strong>
+                </p>
             </div>
 
             <!-- Footer Instruksi Badge -->

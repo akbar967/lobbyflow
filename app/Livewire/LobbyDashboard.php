@@ -46,6 +46,8 @@ class LobbyDashboard extends Component
 
     public bool $is_preregistered = false;
 
+    public bool $is_vip = false;
+
     public ?string $successMessage = null;
 
     public ?string $errorMessage = null;
@@ -60,6 +62,22 @@ class LobbyDashboard extends Component
     public ?int $edit_employee_id = null;
 
     public string $edit_purpose = '';
+
+    public bool $edit_is_vip = false;
+
+    // Properti Multi-Select Check-Out Massal (Batch Check-Out)
+    public array $selectedVisitors = [];
+
+    public bool $selectAll = false;
+
+    // Properti Modal Wi-Fi Tamu
+    public bool $showWifiModal = false;
+
+    // Properti Modal Kamera QR Scanner
+    public bool $showCameraModal = false;
+
+    // Properti Mode Kiosk Lobi (Self-Service)
+    public bool $kioskMode = false;
 
     // Properti Tambah & Kelola Pegawai (Master Data)
     public bool $showEmployeeModal = false;
@@ -201,6 +219,7 @@ class LobbyDashboard extends Component
             'check_in_at' => $checkInTime,
             'waktu_checkin' => $checkInTime,
             'id_card_image' => $idCardPath,
+            'is_vip' => $this->is_vip,
         ]);
 
         if (! $this->is_preregistered && $employee && ! empty($employee->email)) {
@@ -211,7 +230,7 @@ class LobbyDashboard extends Component
             }
         }
 
-        $this->reset(['name', 'instansi', 'employee_id', 'purpose', 'id_card_image', 'is_preregistered']);
+        $this->reset(['name', 'instansi', 'employee_id', 'purpose', 'id_card_image', 'is_preregistered', 'is_vip']);
 
         $this->dispatch('play-chime');
 
@@ -302,6 +321,7 @@ class LobbyDashboard extends Component
         $this->edit_instansi = $visitor->instansi;
         $this->edit_employee_id = $visitor->employee_id;
         $this->edit_purpose = $visitor->purpose;
+        $this->edit_is_vip = (bool) $visitor->is_vip;
     }
 
     public function updateVisitor(): void
@@ -324,6 +344,7 @@ class LobbyDashboard extends Component
             'host_tujuan' => $employee?->name,
             'purpose' => $this->edit_purpose,
             'keperluan' => $this->edit_purpose,
+            'is_vip' => $this->edit_is_vip,
         ]);
 
         $this->cancelEdit();
@@ -332,7 +353,7 @@ class LobbyDashboard extends Component
 
     public function cancelEdit(): void
     {
-        $this->reset(['editingVisitorId', 'edit_name', 'edit_instansi', 'edit_employee_id', 'edit_purpose']);
+        $this->reset(['editingVisitorId', 'edit_name', 'edit_instansi', 'edit_employee_id', 'edit_purpose', 'edit_is_vip']);
     }
 
     public function deleteVisitor(int $id): void
@@ -539,6 +560,7 @@ class LobbyDashboard extends Component
                 'host' => $employees[0]->name,
                 'purpose' => 'Presentasi Integrasi Cloud Enterprise',
                 'status' => 'INSIDE',
+                'is_vip' => true,
                 'check_in' => $now->copy()->subMinutes(25),
                 'check_out' => null,
                 'durasi' => null,
@@ -605,6 +627,7 @@ class LobbyDashboard extends Component
                 'check_out_at' => $demo['check_out'],
                 'waktu_checkout' => $demo['check_out'],
                 'durasi' => $demo['durasi'],
+                'is_vip' => $demo['is_vip'] ?? false,
             ]);
         }
 
@@ -763,6 +786,73 @@ class LobbyDashboard extends Component
         return redirect()->back()->with('success', $message);
     }
 
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selectedVisitors = Visitor::where('status', 'INSIDE')
+                ->pluck('id')
+                ->map(fn ($id) => (string) $id)
+                ->toArray();
+        } else {
+            $this->selectedVisitors = [];
+        }
+    }
+
+    public function batchCheckout(): void
+    {
+        if (empty($this->selectedVisitors)) {
+            $this->errorMessage = 'Pilih minimal satu tamu yang berada di dalam gedung untuk check-out massal.';
+
+            return;
+        }
+
+        $count = 0;
+        foreach ($this->selectedVisitors as $id) {
+            $visitor = Visitor::find($id);
+            if ($visitor && $visitor->status === 'INSIDE') {
+                $this->checkout((int) $id);
+                $count++;
+            }
+        }
+
+        $this->selectedVisitors = [];
+        $this->selectAll = false;
+        $this->successMessage = "✨ Berhasil melakukan check-out massal untuk {$count} tamu!";
+    }
+
+    public function toggleVip(int $id): void
+    {
+        $visitor = Visitor::findOrFail($id);
+        $visitor->update(['is_vip' => ! $visitor->is_vip]);
+        $status = $visitor->is_vip ? 'VIP (Tamu Prioritas)' : 'Reguler';
+        $this->successMessage = "Status tamu {$visitor->name} diubah menjadi {$status}.";
+    }
+
+    public function openWifiModal(): void
+    {
+        $this->showWifiModal = true;
+    }
+
+    public function closeWifiModal(): void
+    {
+        $this->showWifiModal = false;
+    }
+
+    public function openCameraModal(): void
+    {
+        $this->showCameraModal = true;
+    }
+
+    public function closeCameraModal(): void
+    {
+        $this->showCameraModal = false;
+    }
+
+    public function toggleKioskMode(): void
+    {
+        $this->kioskMode = ! $this->kioskMode;
+    }
+
     public function render()
     {
         $visitors = Visitor::with('employee')
@@ -773,7 +863,10 @@ class LobbyDashboard extends Component
                         ->orWhere('instansi', 'like', "%{$search}%");
                 });
             })
-            ->when($this->statusFilter !== 'ALL', function ($query) {
+            ->when($this->statusFilter === 'VIP', function ($query) {
+                $query->where('is_vip', true);
+            })
+            ->when($this->statusFilter !== 'ALL' && $this->statusFilter !== 'VIP', function ($query) {
                 $query->where('status', $this->statusFilter);
             })
             ->latest()
@@ -786,6 +879,7 @@ class LobbyDashboard extends Component
             'inside_now' => Visitor::where('status', 'INSIDE')->count(),
             'scheduled' => Visitor::where('status', 'SCHEDULED')->count(),
             'checked_out_today' => Visitor::whereDate('created_at', today())->where('status', 'CHECKED_OUT')->count(),
+            'vip_count' => Visitor::where('is_vip', true)->where('status', 'INSIDE')->count(),
             'total_employees' => $employees->count(),
         ];
 

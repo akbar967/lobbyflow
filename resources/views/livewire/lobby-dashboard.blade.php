@@ -61,6 +61,18 @@
                 </div>
             </div>
 
+            <!-- Akses Wi-Fi Tamu -->
+            <button type="button" wire:click="openWifiModal" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-full transition shadow-sm" title="Lihat Informasi & QR Akses Wi-Fi Tamu">
+                <span>📶</span>
+                <span class="hidden sm:inline">Wi-Fi Tamu</span>
+            </button>
+
+            <!-- Mode Kiosk Tamu Mandiri -->
+            <button type="button" wire:click="toggleKioskMode" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 px-3 py-1.5 rounded-full transition shadow-sm" title="Masuk ke Mode Kiosk Tablet Tamu Mandiri">
+                <span>🖥️</span>
+                <span class="hidden sm:inline">Mode Kiosk</span>
+            </button>
+
             <!-- Suara Lobi Chime Toggle -->
             <button type="button" onclick="toggleLobbyAudio()" id="audio-toggle-btn" class="inline-flex items-center gap-1.5 text-xs font-semibold bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 px-3 py-1.5 rounded-full transition shadow-sm" title="Aktifkan / Bisukan Nada Dering Notifikasi Lobi">
                 <span id="audio-icon">🔔</span>
@@ -148,72 +160,94 @@
             </div>
         </div>
 
-        <!-- 6 Interactive Feature Action Cards -->
-        <div class="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 bg-slate-50/60">
+        <!-- 8 Interactive Feature Action Cards -->
+        <div class="p-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 bg-slate-50/60">
             <!-- 1. Smart Scan OCR -->
-            <button type="button" wire:click="simulateAiScan" class="p-3 bg-white hover:bg-purple-50/60 rounded-xl border border-gray-200 hover:border-purple-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-base font-bold shadow-inner">📷</span>
-                    <span class="text-[9px] bg-purple-100 text-purple-800 font-extrabold px-1.5 py-0.5 rounded uppercase">AI Vision</span>
+            <button type="button" wire:click="simulateAiScan" class="p-2.5 bg-white hover:bg-purple-50/60 rounded-xl border border-gray-200 hover:border-purple-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold shadow-inner">📷</span>
+                    <span class="text-[8px] bg-purple-100 text-purple-800 font-extrabold px-1 py-0.5 rounded uppercase">AI Vision</span>
                 </div>
-                <h4 class="text-xs font-bold text-gray-900 group-hover:text-purple-700">Smart Scan OCR</h4>
-                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Ekstraksi nama KTP otomatis</p>
-                <span class="mt-2 inline-flex items-center text-[10px] text-purple-600 font-bold">Coba Scan AI &rarr;</span>
+                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-purple-700">Smart Scan</h4>
+                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Ekstraksi KTP</p>
+                <span class="mt-1.5 inline-flex items-center text-[9px] text-purple-600 font-bold">Coba Scan &rarr;</span>
             </button>
 
             <!-- 2. Quick Pass Scanner -->
-            <button type="button" onclick="const el = document.getElementById('quick-pass-input'); if(el) { el.focus(); el.scrollIntoView({behavior:'smooth'}); }" class="p-3 bg-white hover:bg-amber-50/60 rounded-xl border border-gray-200 hover:border-amber-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-base font-bold shadow-inner">⚡</span>
-                    <span class="text-[9px] bg-amber-100 text-amber-800 font-extrabold px-1.5 py-0.5 rounded uppercase">Barcode/QR</span>
+            <button type="button" onclick="const el = document.getElementById('quick-pass-input'); if(el) { el.focus(); el.scrollIntoView({behavior:'smooth'}); }" class="p-2.5 bg-white hover:bg-amber-50/60 rounded-xl border border-gray-200 hover:border-amber-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold shadow-inner">⚡</span>
+                    <span class="text-[8px] bg-amber-100 text-amber-800 font-extrabold px-1 py-0.5 rounded uppercase">Pass ID</span>
                 </div>
-                <h4 class="text-xs font-bold text-gray-900 group-hover:text-amber-700">Check-Out Cepat</h4>
-                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Scan kode pass 1-detik</p>
-                <span class="mt-2 inline-flex items-center text-[10px] text-amber-600 font-bold">Fokus Scan &rarr;</span>
+                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-amber-700">Quick Pass</h4>
+                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Scan pass 1-detik</p>
+                <span class="mt-1.5 inline-flex items-center text-[9px] text-amber-600 font-bold">Fokus &rarr;</span>
             </button>
 
-            <!-- 3. Roster Evakuasi K3 -->
-            <button type="button" wire:click="openEvacuationModal" class="p-3 bg-white hover:bg-rose-50/60 rounded-xl border border-gray-200 hover:border-rose-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-base font-bold shadow-inner">🚨</span>
-                    <span class="text-[9px] bg-rose-100 text-rose-800 font-extrabold px-1.5 py-0.5 rounded uppercase">K3 Safety</span>
+            <!-- 3. Kamera QR Scanner -->
+            <button type="button" wire:click="openCameraModal" class="p-2.5 bg-white hover:bg-indigo-50/60 rounded-xl border border-gray-200 hover:border-indigo-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold shadow-inner">📸</span>
+                    <span class="text-[8px] bg-indigo-100 text-indigo-800 font-extrabold px-1 py-0.5 rounded uppercase">Kamera QR</span>
                 </div>
-                <h4 class="text-xs font-bold text-gray-900 group-hover:text-rose-700">Evakuasi K3</h4>
-                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Roster keselamatan tamu</p>
-                <span class="mt-2 inline-flex items-center text-[10px] text-rose-600 font-bold">Buka Roster &rarr;</span>
+                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-indigo-700">Scan Kamera</h4>
+                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Webcam Scanner</p>
+                <span class="mt-1.5 inline-flex items-center text-[9px] text-indigo-600 font-bold">Buka Kamera &rarr;</span>
             </button>
 
-            <!-- 4. Notifikasi WhatsApp -->
-            <button type="button" wire:click="generateDemoVisitors" class="p-3 bg-white hover:bg-emerald-50/60 rounded-xl border border-gray-200 hover:border-emerald-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-base font-bold shadow-inner">💬</span>
-                    <span class="text-[9px] bg-emerald-100 text-emerald-800 font-extrabold px-1.5 py-0.5 rounded uppercase">WA Alert</span>
+            <!-- 4. Roster Evakuasi K3 -->
+            <button type="button" wire:click="openEvacuationModal" class="p-2.5 bg-white hover:bg-rose-50/60 rounded-xl border border-gray-200 hover:border-rose-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-bold shadow-inner">🚨</span>
+                    <span class="text-[8px] bg-rose-100 text-rose-800 font-extrabold px-1 py-0.5 rounded uppercase">K3 Safety</span>
                 </div>
-                <h4 class="text-xs font-bold text-gray-900 group-hover:text-emerald-700">WhatsApp Host</h4>
-                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Kirim pesan instan tamu</p>
-                <span class="mt-2 inline-flex items-center text-[10px] text-emerald-600 font-bold">Simulasi Lobi &rarr;</span>
+                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-rose-700">Evakuasi K3</h4>
+                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Roster darurat</p>
+                <span class="mt-1.5 inline-flex items-center text-[9px] text-rose-600 font-bold">Buka Roster &rarr;</span>
             </button>
 
-            <!-- 5. Ekspor Laporan CSV -->
-            <button type="button" wire:click="exportTodayCsv" class="p-3 bg-white hover:bg-teal-50/60 rounded-xl border border-gray-200 hover:border-teal-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="w-8 h-8 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-base font-bold shadow-inner">📥</span>
-                    <span class="text-[9px] bg-teal-100 text-teal-800 font-extrabold px-1.5 py-0.5 rounded uppercase">Excel/CSV</span>
+            <!-- 5. Wi-Fi Tamu -->
+            <button type="button" wire:click="openWifiModal" class="p-2.5 bg-white hover:bg-blue-50/60 rounded-xl border border-gray-200 hover:border-blue-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-bold shadow-inner">📶</span>
+                    <span class="text-[8px] bg-blue-100 text-blue-800 font-extrabold px-1 py-0.5 rounded uppercase">Voucher</span>
                 </div>
-                <h4 class="text-xs font-bold text-gray-900 group-hover:text-teal-700">Ekspor Hari Ini</h4>
-                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Unduh rekapitulasi data</p>
-                <span class="mt-2 inline-flex items-center text-[10px] text-teal-600 font-bold">Unduh File &rarr;</span>
+                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-blue-700">Wi-Fi Tamu</h4>
+                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Akses & QR Code</p>
+                <span class="mt-1.5 inline-flex items-center text-[9px] text-blue-600 font-bold">Lihat Wi-Fi &rarr;</span>
             </button>
 
-            <!-- 6. Kelola Pegawai -->
-            <button type="button" wire:click="$set('showManageEmployeesModal', true)" class="p-3 bg-white hover:bg-indigo-50/60 rounded-xl border border-gray-200 hover:border-indigo-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-base font-bold shadow-inner">👔</span>
-                    <span class="text-[9px] bg-indigo-100 text-indigo-800 font-extrabold px-1.5 py-0.5 rounded uppercase">Master Data</span>
+            <!-- 6. Notifikasi WhatsApp -->
+            <button type="button" wire:click="generateDemoVisitors" class="p-2.5 bg-white hover:bg-emerald-50/60 rounded-xl border border-gray-200 hover:border-emerald-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold shadow-inner">💬</span>
+                    <span class="text-[8px] bg-emerald-100 text-emerald-800 font-extrabold px-1 py-0.5 rounded uppercase">WA Alert</span>
                 </div>
-                <h4 class="text-xs font-bold text-gray-900 group-hover:text-indigo-700">Data Pegawai</h4>
-                <p class="text-[10px] text-gray-500 mt-0.5 line-clamp-1">Kelola direktori host</p>
-                <span class="mt-2 inline-flex items-center text-[10px] text-indigo-600 font-bold">Kelola Staf &rarr;</span>
+                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-emerald-700">WhatsApp</h4>
+                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Notif ke host</p>
+                <span class="mt-1.5 inline-flex items-center text-[9px] text-emerald-600 font-bold">Simulasi Lobi &rarr;</span>
+            </button>
+
+            <!-- 7. Ekspor Laporan CSV -->
+            <button type="button" wire:click="exportTodayCsv" class="p-2.5 bg-white hover:bg-teal-50/60 rounded-xl border border-gray-200 hover:border-teal-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="w-7 h-7 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-sm font-bold shadow-inner">📥</span>
+                    <span class="text-[8px] bg-teal-100 text-teal-800 font-extrabold px-1 py-0.5 rounded uppercase">Excel</span>
+                </div>
+                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-teal-700">Ekspor CSV</h4>
+                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Unduh rekap hari ini</p>
+                <span class="mt-1.5 inline-flex items-center text-[9px] text-teal-600 font-bold">Unduh File &rarr;</span>
+            </button>
+
+            <!-- 8. Kelola Pegawai -->
+            <button type="button" wire:click="$set('showManageEmployeesModal', true)" class="p-2.5 bg-white hover:bg-slate-50 rounded-xl border border-gray-200 hover:border-slate-300 text-left transition shadow-sm group hover:-translate-y-0.5 transform duration-150">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm font-bold shadow-inner">👔</span>
+                    <span class="text-[8px] bg-slate-100 text-slate-800 font-extrabold px-1 py-0.5 rounded uppercase">Master</span>
+                </div>
+                <h4 class="text-[11px] font-bold text-gray-900 group-hover:text-slate-800">Pegawai</h4>
+                <p class="text-[9px] text-gray-500 mt-0.5 line-clamp-1">Direktori host</p>
+                <span class="mt-1.5 inline-flex items-center text-[9px] text-slate-600 font-bold">Kelola Staf &rarr;</span>
             </button>
         </div>
     </div>
@@ -445,6 +479,15 @@
                     <p class="text-[10px] text-gray-500 mt-0.5 ml-5">Tamu didaftarkan lebih awal dan dapat dikonfirmasi saat tiba di lobi.</p>
                 </div>
 
+                <!-- ⭐ VIP / Prioritas Guest Flag Option -->
+                <div class="p-2.5 bg-amber-50/70 border border-amber-200 rounded-lg text-xs">
+                    <label class="flex items-center gap-2 cursor-pointer font-bold text-amber-900">
+                        <input type="checkbox" wire:model="is_vip" class="rounded text-amber-600 focus:ring-amber-500">
+                        <span>⭐ Tandai sebagai Tamu VIP / Prioritas</span>
+                    </label>
+                    <p class="text-[10px] text-amber-700 mt-0.5 ml-5">Tamu mendapatkan badge pass emas & prioritas pelayanan.</p>
+                </div>
+
                 <!-- Tombol Submit -->
                 <button type="submit" wire:loading.attr="disabled" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg font-semibold transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50">
                     <span wire:loading.remove wire:target="save" class="flex items-center gap-2">
@@ -512,6 +555,10 @@
                     <button type="button" wire:click="setStatusFilter('CHECKED_OUT')" class="px-3 py-1.5 rounded-lg transition {{ $statusFilter === 'CHECKED_OUT' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-600 hover:text-gray-900' }}">
                         Selesai ({{ $stats['checked_out_today'] }})
                     </button>
+                    <button type="button" wire:click="setStatusFilter('VIP')" class="px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 {{ $statusFilter === 'VIP' ? 'bg-amber-400 text-amber-950 font-bold shadow-sm' : 'text-gray-600 hover:text-gray-900' }}" title="Filter Tamu VIP">
+                        <span>⭐</span>
+                        VIP ({{ $stats['vip_count'] }})
+                    </button>
                 </div>
 
                 <!-- ⚡ Quick Check-Out Pass Scanner Input Console -->
@@ -524,6 +571,9 @@
                     </div>
                     <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition shadow-sm whitespace-nowrap flex items-center gap-1">
                         <span>Check-Out</span>
+                    </button>
+                    <button type="button" wire:click="openCameraModal" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-2.5 py-1.5 rounded-lg transition shadow-sm whitespace-nowrap flex items-center gap-1" title="Buka Kamera untuk scan QR Code Pass Tamu">
+                        <span>📷 Scan Kamera</span>
                     </button>
                 </form>
             </div>
@@ -551,10 +601,29 @@
                 @endif
             </div>
 
+            <!-- Bar Aksi Batch Check-Out Massal -->
+            @if(count($selectedVisitors) > 0)
+                <div class="mb-4 p-3 bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white rounded-xl shadow-md flex items-center justify-between gap-3 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">{{ count($selectedVisitors) }}</span>
+                        <span class="font-semibold">{{ count($selectedVisitors) }} Tamu Terpilih</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" wire:click="batchCheckout" wire:confirm="Check-out massal {{ count($selectedVisitors) }} tamu terpilih sekarang?" class="px-4 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg transition shadow-sm flex items-center gap-1">
+                            <span>🏁 Check-Out Terpilih ({{ count($selectedVisitors) }})</span>
+                        </button>
+                        <button type="button" wire:click="$set('selectedVisitors', [])" class="px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition">
+                            Batal
+                        </button>
+                    </div>
+                </div>
+            @endif
+
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            <th class="pb-3 w-8"><input type="checkbox" wire:model.live="selectAll" class="rounded text-indigo-600 focus:ring-indigo-500" title="Pilih Semua Tamu di Gedung"></th>
                             <th class="pb-3">Tamu & Instansi</th>
                             <th class="pb-3">Host Tujuan</th>
                             <th class="pb-3">Keperluan</th>
@@ -564,12 +633,22 @@
                     </thead>
                     <tbody class="divide-y text-sm">
                         @forelse($visitors as $v)
-                            <tr wire:key="visitor-{{ $v->id }}" class="hover:bg-gray-50/75 transition">
+                            <tr wire:key="visitor-{{ $v->id }}" class="hover:bg-gray-50/75 transition {{ in_array((string)$v->id, $selectedVisitors) ? 'bg-indigo-50/40' : '' }}">
+                                <!-- Checkbox Baris -->
+                                <td class="py-3.5 pr-1 w-8">
+                                    <input type="checkbox" wire:model.live="selectedVisitors" value="{{ $v->id }}" class="rounded text-indigo-600 focus:ring-indigo-500">
+                                </td>
+
                                 <!-- Tamu & Instansi -->
                                 <td class="py-3.5 pr-2">
                                     <div class="flex items-center gap-2">
                                         <div>
-                                            <p class="font-bold text-gray-900">{{ $v->name ?? $v->nama_tamu }}</p>
+                                            <div class="flex items-center gap-1.5">
+                                                <p class="font-bold text-gray-900">{{ $v->name ?? $v->nama_tamu }}</p>
+                                                @if($v->is_vip)
+                                                    <span class="inline-flex items-center px-1.5 py-0.2 bg-amber-100 text-amber-800 border border-amber-300 rounded-full text-[9px] font-black shadow-xs">⭐ VIP</span>
+                                                @endif
+                                            </div>
                                             <p class="text-xs text-gray-500 font-medium">{{ $v->instansi }}</p>
                                             <!-- Kode Pass Tamu dengan Salin 1-Klik -->
                                             <div class="mt-1 flex items-center gap-1">
@@ -671,6 +750,11 @@
                                             </span>
                                         @endif
 
+                                        <!-- Tombol Toggle Status VIP -->
+                                        <button type="button" wire:click="toggleVip({{ $v->id }})" class="p-1.5 {{ $v->is_vip ? 'text-amber-500 hover:text-amber-600 bg-amber-50' : 'text-gray-300 hover:text-amber-500' }} rounded-lg hover:bg-amber-50 transition text-xs" title="{{ $v->is_vip ? 'Hapus Status VIP' : 'Jadikan Tamu VIP' }}">
+                                            ⭐
+                                        </button>
+
                                         <!-- Tombol Notifikasi WhatsApp ke Host -->
                                         <button type="button" wire:click="openWhatsAppModal({{ $v->id }})" class="p-1.5 text-gray-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50 transition" title="Kirim Notifikasi WhatsApp ke Host">
                                             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -696,7 +780,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center py-8 text-gray-400">
+                                <td colspan="6" class="text-center py-8 text-gray-400">
                                     @if($search)
                                         <div class="flex flex-col items-center justify-center">
                                             <span class="text-2xl mb-1">🔍</span>
@@ -757,6 +841,13 @@
                         <label class="block text-xs font-semibold text-gray-700">Keperluan Kunjungan</label>
                         <input type="text" wire:model="edit_purpose" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
                         @error('edit_purpose') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200">
+                        <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-amber-900">
+                            <input type="checkbox" wire:model="edit_is_vip" class="rounded text-amber-600 focus:ring-amber-500">
+                            <span>⭐ Status Tamu VIP / Prioritas</span>
+                        </label>
                     </div>
 
                     <div class="flex justify-end gap-2 pt-3 border-t">
@@ -1216,6 +1307,30 @@
                                 <p class="text-gray-600 mt-1">Stream CSV dengan UTF-8 BOM untuk kompatibilitas Microsoft Excel, serta cetak dokumen PDF rekap resmi dengan kop surat.</p>
                             </div>
                         </div>
+
+                        <!-- Fitur 13 -->
+                        <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50/40 shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-blue-100 rounded-lg">📶</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-blue-950 text-sm">Akses Wi-Fi Tamu & QR Connect</h4>
+                                    <span class="text-[10px] bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full">📶 WI-FI VOUCHER</span>
+                                </div>
+                                <p class="text-gray-600 mt-1">Kredensial Wi-Fi lobi otomatis dengan QR Code scan-to-connect di layar resepsionis dan tercetak langsung di kartu Visitor Pass.</p>
+                            </div>
+                        </div>
+
+                        <!-- Fitur 14 -->
+                        <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm flex items-start gap-3">
+                            <span class="text-2xl p-2 bg-amber-100 rounded-lg">⭐</span>
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="font-bold text-amber-950 text-sm">VIP Guest & Check-Out Massal</h4>
+                                    <span class="text-[10px] bg-amber-600 text-white font-bold px-2 py-0.5 rounded-full">⭐ BATCH OPS</span>
+                                </div>
+                                <p class="text-gray-600 mt-1">Penandaan tamu kehormatan/VIP dengan badge emas, filter khusus, dan fitur multi-select untuk check-out rombongan sekaligus.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1230,7 +1345,160 @@
         </div>
     @endif
 
-    <!-- Toast Notifikasi Copy Pass Code -->
+    <!-- Modal Akses Wi-Fi Tamu (Guest Wi-Fi Voucher) -->
+    @if($showWifiModal)
+        <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-blue-200">
+                <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 text-white p-5 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
+                            📶
+                        </div>
+                        <div>
+                            <h3 class="text-base font-extrabold tracking-wide">Akses Wi-Fi Tamu Gedung</h3>
+                            <p class="text-xs text-blue-100">Koneksi internet resmi untuk pengunjung & mitra</p>
+                        </div>
+                    </div>
+                    <button type="button" wire:click="closeWifiModal" class="text-white/80 hover:text-white font-bold text-xl px-2">✕</button>
+                </div>
+
+                <div class="p-6 text-center space-y-4">
+                    <div class="bg-blue-50/60 p-4 rounded-2xl border border-blue-100 space-y-3">
+                        <div class="text-left text-xs space-y-2">
+                            <div class="flex justify-between items-center pb-2 border-b border-blue-200/50">
+                                <span class="text-gray-500 font-semibold">Nama Network (SSID):</span>
+                                <span class="font-mono font-bold text-gray-900 text-sm">LobbyFlow-Guest</span>
+                            </div>
+                            <div class="flex justify-between items-center pb-2 border-b border-blue-200/50">
+                                <span class="text-gray-500 font-semibold">Kata Sandi (Password):</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="font-mono font-bold text-indigo-700 text-sm">Tamu{{ date('Y') }}!</span>
+                                    <button type="button" onclick="navigator.clipboard.writeText('Tamu{{ date('Y') }}!'); showCopyToast('Tamu{{ date('Y') }}!')" class="text-indigo-600 hover:text-indigo-800 text-xs" title="Salin Password">
+                                        📋
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500 font-semibold">Keamanan / Bandwidth:</span>
+                                <span class="text-emerald-700 font-bold text-xs">WPA3 Secure &bull; High Speed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-gray-600">
+                        <p class="font-medium">💡 Informasi Wi-Fi ini juga tercetak secara otomatis pada kartu <strong>Visitor Pass</strong> yang diberikan kepada tamu.</p>
+                    </div>
+
+                    <div class="flex justify-end gap-2 pt-2 border-t">
+                        <button type="button" wire:click="closeWifiModal" class="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm">
+                            Tutup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Modal Kamera Barcode & QR Code Scanner -->
+    @if($showCameraModal)
+        <div class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-indigo-200">
+                <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white p-4 flex justify-between items-center">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-lg">
+                            📷
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold">Kamera Scanner Pass Tamu</h3>
+                            <p class="text-[11px] text-indigo-200">Arahkan QR Code Visitor Pass ke depan kamera</p>
+                        </div>
+                    </div>
+                    <button type="button" wire:click="closeCameraModal" class="text-white/80 hover:text-white font-bold text-lg px-2">✕</button>
+                </div>
+
+                <div class="p-5 space-y-4 text-center">
+                    <!-- Kamera Viewfinder Simulation / Real WebRTC -->
+                    <div class="relative bg-slate-950 rounded-2xl overflow-hidden aspect-video flex items-center justify-center border-2 border-indigo-500 shadow-inner">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-48 h-48 border-2 border-dashed border-emerald-400 rounded-2xl relative animate-pulse flex items-center justify-center">
+                                <span class="text-xs text-emerald-300 font-mono bg-black/60 px-2 py-1 rounded">Target QR Code</span>
+                                <div class="absolute inset-x-0 top-1/2 h-0.5 bg-rose-500 shadow-[0_0_10px_#f43f5e] animate-bounce"></div>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-400 absolute bottom-3">Kamera scanner aktif &bull; Siap memindai</p>
+                    </div>
+
+                    <!-- Input Cepat / Demo Scanner Trigger -->
+                    <div class="flex items-center gap-2">
+                        <input type="text" wire:model="quickPassCode" placeholder="Atau ketik/tempel Kode Pass..." class="flex-1 p-2 text-xs border rounded-lg font-mono focus:ring-2 focus:ring-indigo-500">
+                        <button type="button" wire:click="quickCheckout" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition shadow-sm whitespace-nowrap">
+                            Check-Out
+                        </button>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs text-gray-500 pt-2 border-t">
+                        <span class="text-[11px]">Mendukung barcode 1D & QR Code 2D</span>
+                        <button type="button" wire:click="closeCameraModal" class="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-semibold transition">
+                            Tutup Scanner
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Mode Kiosk Tamu Mandiri (Self-Service Kiosk Mode) -->
+    @if($kioskMode)
+        <div class="fixed inset-0 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 z-50 text-white p-6 md:p-10 flex flex-col justify-between overflow-y-auto">
+            <!-- Header Kiosk -->
+            <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                <div class="flex items-center gap-3">
+                    <img src="{{ asset('logo.svg') }}" alt="Logo" class="w-12 h-12 rounded-xl shadow-md">
+                    <div>
+                        <h2 class="text-2xl font-black text-indigo-300">LobbyFlow Self-Service</h2>
+                        <p class="text-xs text-gray-400">Selamat datang di Meja Resepsionis Mandiri</p>
+                    </div>
+                </div>
+                <button type="button" wire:click="toggleKioskMode" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-gray-300 transition flex items-center gap-1.5 border border-white/15">
+                    <span>✕</span>
+                    <span>Kembali ke Resepsionis</span>
+                </button>
+            </div>
+
+            <!-- Konten Utama Kiosk Touchscreen -->
+            <div class="max-w-xl mx-auto w-full my-8 text-center space-y-6">
+                <div class="space-y-2">
+                    <span class="text-5xl">👋</span>
+                    <h1 class="text-3xl font-extrabold text-white">Selamat Datang di Kantor Kami</h1>
+                    <p class="text-sm text-indigo-200">Silakan pilih layanan registrasi tamu mandiri di bawah ini:</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                    <button type="button" wire:click="toggleKioskMode" class="p-6 bg-white/10 hover:bg-indigo-600/40 rounded-2xl border-2 border-indigo-400/40 transition shadow-lg group hover:scale-[1.02] transform duration-150">
+                        <span class="text-4xl block mb-2">✍️</span>
+                        <h3 class="text-lg font-bold text-white group-hover:text-indigo-200">Check-In Baru</h3>
+                        <p class="text-xs text-gray-300 mt-1">Registrasi nama, instansi, dan pegawai yang dituju</p>
+                    </button>
+
+                    <button type="button" wire:click="openCameraModal" class="p-6 bg-white/10 hover:bg-emerald-600/40 rounded-2xl border-2 border-emerald-400/40 transition shadow-lg group hover:scale-[1.02] transform duration-150">
+                        <span class="text-4xl block mb-2">⚡</span>
+                        <h3 class="text-lg font-bold text-white group-hover:text-emerald-200">Scan Check-Out</h3>
+                        <p class="text-xs text-gray-300 mt-1">Scan pass tamu untuk check-out saat meninggalkan gedung</p>
+                    </button>
+                </div>
+
+                <div class="p-4 bg-white/5 rounded-2xl border border-white/10 text-xs text-gray-400 space-y-1">
+                    <p class="font-semibold text-gray-300">📶 Wi-Fi Tamu: <strong class="text-indigo-300 font-mono">LobbyFlow-Guest</strong> | Pass: <strong class="text-indigo-300 font-mono">Tamu{{ date('Y') }}!</strong></p>
+                    <p>Harap selalu mengenakan kartu Visitor Pass selama berada di lingkungan perkantoran.</p>
+                </div>
+            </div>
+
+            <!-- Footer Kiosk -->
+            <div class="text-center text-xs text-gray-500 border-t border-white/10 pt-4">
+                LobbyFlow Enterprise Kiosk Mode &bull; Touch-Screen Ready &bull; Dilindungi CCTV & Standar K3
+            </div>
+        </div>
+    @endif
     <div id="copy-toast" class="fixed bottom-5 right-5 z-50 bg-gray-900 text-white text-xs px-4 py-2.5 rounded-xl shadow-lg border border-gray-700 flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
         <span>📋</span>
         <span id="copy-toast-text">Kode Pass berhasil disalin!</span>

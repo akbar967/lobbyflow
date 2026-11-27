@@ -27,9 +27,11 @@ class Visitor extends Model
         'waktu_checkout',
         'durasi',
         'id_card_image',
+        'is_vip',
     ];
 
     protected $casts = [
+        'is_vip' => 'boolean',
         'check_in_at' => 'datetime',
         'waktu_checkin' => 'datetime',
         'check_out_at' => 'datetime',
