@@ -46,6 +46,8 @@ class LobbyDashboard extends Component
 
     public bool $is_preregistered = false;
 
+    public ?string $scheduled_at = null;
+
     public bool $is_vip = false;
 
     public ?string $successMessage = null;
@@ -64,6 +66,8 @@ class LobbyDashboard extends Component
     public string $edit_purpose = '';
 
     public bool $edit_is_vip = false;
+
+    public ?string $edit_scheduled_at = null;
 
     // Properti Multi-Select Check-Out Massal (Batch Check-Out)
     public array $selectedVisitors = [];
@@ -145,6 +149,7 @@ class LobbyDashboard extends Component
             'employee_id' => 'required|exists:employees,id',
             'purpose' => 'required|string|max:255',
             'id_card_image' => 'nullable|image|max:3072',
+            'scheduled_at' => 'nullable|date',
         ];
     }
 
@@ -153,6 +158,7 @@ class LobbyDashboard extends Component
         'instansi.required' => 'Asal instansi / perusahaan wajib diisi.',
         'employee_id.required' => 'Silakan pilih pegawai yang dituju.',
         'purpose.required' => 'Keperluan kunjungan wajib diisi.',
+        'scheduled_at.date' => 'Format tanggal dan jam jadwal janji temu tidak valid.',
     ];
 
     /**
@@ -205,6 +211,7 @@ class LobbyDashboard extends Component
 
         $status = $this->is_preregistered ? 'SCHEDULED' : 'INSIDE';
         $checkInTime = $this->is_preregistered ? null : $now;
+        $scheduledTime = $this->is_preregistered ? ($this->scheduled_at ? Carbon::parse($this->scheduled_at) : now()->addDay()) : null;
 
         $visitor = Visitor::create([
             'name' => $this->name,
@@ -218,6 +225,7 @@ class LobbyDashboard extends Component
             'status' => $status,
             'check_in_at' => $checkInTime,
             'waktu_checkin' => $checkInTime,
+            'scheduled_at' => $scheduledTime,
             'id_card_image' => $idCardPath,
             'is_vip' => $this->is_vip,
         ]);
@@ -230,7 +238,7 @@ class LobbyDashboard extends Component
             }
         }
 
-        $this->reset(['name', 'instansi', 'employee_id', 'purpose', 'id_card_image', 'is_preregistered', 'is_vip']);
+        $this->reset(['name', 'instansi', 'employee_id', 'purpose', 'id_card_image', 'is_preregistered', 'is_vip', 'scheduled_at']);
 
         $this->dispatch('play-chime');
 
@@ -322,6 +330,7 @@ class LobbyDashboard extends Component
         $this->edit_employee_id = $visitor->employee_id;
         $this->edit_purpose = $visitor->purpose;
         $this->edit_is_vip = (bool) $visitor->is_vip;
+        $this->edit_scheduled_at = $visitor->scheduled_at ? $visitor->scheduled_at->format('Y-m-d\TH:i') : null;
     }
 
     public function updateVisitor(): void
@@ -331,6 +340,7 @@ class LobbyDashboard extends Component
             'edit_instansi' => 'required|string|max:255',
             'edit_employee_id' => 'required|exists:employees,id',
             'edit_purpose' => 'required|string|max:255',
+            'edit_scheduled_at' => 'nullable|date',
         ]);
 
         $visitor = Visitor::findOrFail($this->editingVisitorId);
@@ -345,6 +355,7 @@ class LobbyDashboard extends Component
             'purpose' => $this->edit_purpose,
             'keperluan' => $this->edit_purpose,
             'is_vip' => $this->edit_is_vip,
+            'scheduled_at' => $this->edit_scheduled_at ? Carbon::parse($this->edit_scheduled_at) : $visitor->scheduled_at,
         ]);
 
         $this->cancelEdit();
@@ -353,7 +364,7 @@ class LobbyDashboard extends Component
 
     public function cancelEdit(): void
     {
-        $this->reset(['editingVisitorId', 'edit_name', 'edit_instansi', 'edit_employee_id', 'edit_purpose', 'edit_is_vip']);
+        $this->reset(['editingVisitorId', 'edit_name', 'edit_instansi', 'edit_employee_id', 'edit_purpose', 'edit_is_vip', 'edit_scheduled_at']);
     }
 
     public function deleteVisitor(int $id): void
@@ -420,7 +431,15 @@ class LobbyDashboard extends Component
         $purpose = $visitor->purpose ?? '-';
         $pass = $visitor->qr_code ?? ('PASS-'.$visitor->id);
 
-        $text = "Halo *{$hostName}*,\n\nTamu Anda *{$guestName}* dari *{$guestCompany}* telah tiba di Meja Resepsionis Lobi Gedung.\n\nKeperluan: {$purpose}\nKode Pass: {$pass}\n\nMohon dapat segera menemui tamu di lobi. Terima kasih! (LobbyFlow Enterprise)";
+        if ($visitor->status === 'SCHEDULED') {
+            $scheduleFormatted = $visitor->scheduled_at
+                ? Carbon::parse($visitor->scheduled_at)->isoFormat('dddd, D MMMM Y - HH:mm').' WIB'
+                : 'Belum ditentukan';
+
+            $text = "Halo *{$hostName}*,\n\nInformasi Pra-Registrasi Janji Temu:\nTamu *{$guestName}* dari *{$guestCompany}* telah dijadwalkan bertemu dengan Anda pada:\n📅 *{$scheduleFormatted}*\nKeperluan: {$purpose}\nKode Pass Tamu: {$pass}\n\nTerima kasih! (LobbyFlow Enterprise)";
+        } else {
+            $text = "Halo *{$hostName}*,\n\nTamu Anda *{$guestName}* dari *{$guestCompany}* telah tiba di Meja Resepsionis Lobi Gedung.\n\nKeperluan: {$purpose}\nKode Pass: {$pass}\n\nMohon dapat segera menemui tamu di lobi. Terima kasih! (LobbyFlow Enterprise)";
+        }
 
         $this->whatsAppData = [
             'visitor_id' => $visitor->id,
@@ -603,6 +622,7 @@ class LobbyDashboard extends Component
                 'check_in' => null,
                 'check_out' => null,
                 'durasi' => null,
+                'scheduled_at' => $now->copy()->addDay()->setHour(10)->setMinute(30),
             ],
             [
                 'name' => 'Bambang Trihatmojo',
@@ -632,6 +652,7 @@ class LobbyDashboard extends Component
                 'waktu_checkin' => $demo['check_in'],
                 'check_out_at' => $demo['check_out'],
                 'waktu_checkout' => $demo['check_out'],
+                'scheduled_at' => $demo['scheduled_at'] ?? null,
                 'durasi' => $demo['durasi'],
                 'is_vip' => $demo['is_vip'] ?? false,
             ]);

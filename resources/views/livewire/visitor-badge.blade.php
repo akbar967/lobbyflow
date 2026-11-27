@@ -109,13 +109,20 @@
                     <span class="text-gray-400 font-medium">Keperluan:</span>
                     <span class="font-semibold text-gray-700 truncate max-w-[180px]">{{ $visitor->purpose ?? $visitor->keperluan ?? '-' }}</span>
                 </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-400 font-medium">Waktu Masuk:</span>
-                    <span class="font-mono text-gray-600">
-                        @php $cIn = $visitor->waktu_checkin ?? $visitor->check_in_at ?? $visitor->created_at; @endphp
-                        {{ $cIn ? \Carbon\Carbon::parse($cIn)->format('d M Y, H:i') : '-' }}
-                    </span>
-                </div>
+                @if($visitor->status === 'SCHEDULED' && $visitor->scheduled_at)
+                    <div class="flex justify-between items-center text-blue-900 bg-blue-50 px-2 py-1 rounded-md">
+                        <span class="font-bold flex items-center gap-1"><span>📅</span> Jadwal Temu:</span>
+                        <span class="font-mono font-bold">{{ \Carbon\Carbon::parse($visitor->scheduled_at)->format('d M Y, H:i') }} WIB</span>
+                    </div>
+                @else
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400 font-medium">Waktu Masuk:</span>
+                        <span class="font-mono text-gray-600">
+                            @php $cIn = $visitor->waktu_checkin ?? $visitor->check_in_at ?? $visitor->created_at; @endphp
+                            {{ $cIn ? \Carbon\Carbon::parse($cIn)->format('d M Y, H:i') : '-' }}
+                        </span>
+                    </div>
+                @endif
             </div>
 
             <!-- Akses Wi-Fi Tamu (Guest Wi-Fi Voucher) -->

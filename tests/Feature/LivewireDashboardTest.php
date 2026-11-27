@@ -483,3 +483,63 @@ test('receptionist sees front desk hub and cannot delete visitor records', funct
     // Visitor should NOT be deleted
     expect(Visitor::find($visitor->id))->not->toBeNull();
 });
+
+test('can schedule visitor with specific appointment date and time and confirm arrival', function () {
+    $employee = Employee::create([
+        'name' => 'Dr. Hendro',
+        'department' => 'R&D',
+        'email' => 'hendro@company.com',
+    ]);
+
+    $scheduleDate = now()->addDays(2)->setHour(14)->setMinute(30);
+
+    Livewire::test(LobbyDashboard::class)
+        ->set('name', 'Tamu Terjadwal Khusus')
+        ->set('instansi', 'PT Inovasi Mandiri')
+        ->set('employee_id', $employee->id)
+        ->set('purpose', 'Diskusi MoU Riset')
+        ->set('is_preregistered', true)
+        ->set('scheduled_at', $scheduleDate->format('Y-m-d\TH:i'))
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertSee('Pra-Registrasi Tamu berhasil dijadwalkan!')
+        ->assertSee('Dijadwalkan')
+        ->assertSee('Jadwal:');
+
+    $visitor = Visitor::where('name', 'Tamu Terjadwal Khusus')->first();
+    expect($visitor)->not->toBeNull()
+        ->and($visitor->status)->toBe('SCHEDULED')
+        ->and($visitor->check_in_at)->toBeNull()
+        ->and($visitor->scheduled_at)->not->toBeNull();
+
+    Livewire::test(LobbyDashboard::class)
+        ->call('confirmArrival', $visitor->id)
+        ->assertSee('telah dikonfirmasi tiba di lobi');
+
+    expect($visitor->fresh()->status)->toBe('INSIDE')
+        ->and($visitor->fresh()->check_in_at)->not->toBeNull();
+});
+
+test('handles scheduled_at gracefully when pra-registration is enabled', function () {
+    $employee = Employee::create([
+        'name' => 'Ibu Maya',
+        'department' => 'Legal',
+        'email' => 'maya@company.com',
+    ]);
+
+    Livewire::test(LobbyDashboard::class)
+        ->set('name', 'Tamu Tanpa Jam Khusus')
+        ->set('instansi', 'PT Mitra')
+        ->set('employee_id', $employee->id)
+        ->set('purpose', 'Meeting')
+        ->set('is_preregistered', true)
+        ->set('scheduled_at', null)
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertSee('Pra-Registrasi Tamu berhasil dijadwalkan');
+
+    $visitor = Visitor::where('name', 'Tamu Tanpa Jam Khusus')->first();
+    expect($visitor)->not->toBeNull()
+        ->and($visitor->status)->toBe('SCHEDULED')
+        ->and($visitor->scheduled_at)->not->toBeNull();
+});

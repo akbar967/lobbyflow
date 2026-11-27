@@ -28,10 +28,12 @@ class Visitor extends Model
         'durasi',
         'id_card_image',
         'is_vip',
+        'scheduled_at',
     ];
 
     protected $casts = [
         'is_vip' => 'boolean',
+        'scheduled_at' => 'datetime',
         'check_in_at' => 'datetime',
         'waktu_checkin' => 'datetime',
         'check_out_at' => 'datetime',

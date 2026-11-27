@@ -670,6 +670,20 @@
                         <span>📅 Pra-Registrasi (Jadwalkan Kunjungan)</span>
                     </label>
                     <p class="text-[10px] text-gray-500 mt-0.5 ml-5">Tamu didaftarkan lebih awal dan dapat dikonfirmasi saat tiba di lobi.</p>
+
+                    @if($is_preregistered)
+                        <div class="mt-2.5 pt-2 border-t border-indigo-200">
+                            <label class="block text-xs font-bold text-indigo-950 mb-1 flex items-center justify-between">
+                                <span>📅 Tanggal & Jam Janji Temu <span class="text-red-500">*</span></span>
+                                <span class="text-[10px] text-indigo-600 font-normal">WIB</span>
+                            </label>
+                            <input type="datetime-local" wire:model="scheduled_at" class="w-full p-2 border border-indigo-300 rounded-lg text-xs bg-white text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-inner @error('scheduled_at') border-red-400 @enderror">
+                            <p class="text-[10px] text-indigo-700 mt-1">Pilih tanggal dan waktu rencana kedatangan tamu.</p>
+                            @error('scheduled_at')
+                                <p class="text-xs text-red-600 mt-1 font-semibold">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    @endif
                 </div>
 
                 <!-- ⭐ VIP / Prioritas Guest Flag Option -->
@@ -872,20 +886,37 @@
                                 <!-- Keperluan -->
                                 <td class="py-3.5 pr-2 text-gray-600">
                                     <p class="text-sm font-medium">{{ $v->purpose ?? $v->keperluan ?? '-' }}</p>
-                                    @php
-                                        $checkInTime = $v->waktu_checkin ? \Illuminate\Support\Carbon::parse($v->waktu_checkin) : null;
-                                    @endphp
-                                    <p class="text-xs text-gray-400">Masuk: {{ $checkInTime ? $checkInTime->format('H:i') : '-' }}</p>
+                                    @if($v->status === 'SCHEDULED')
+                                        @php
+                                            $sched = $v->scheduled_at ? \Illuminate\Support\Carbon::parse($v->scheduled_at) : null;
+                                        @endphp
+                                        <p class="text-xs text-blue-700 font-semibold mt-0.5 flex items-center gap-1">
+                                            <span>📅</span>
+                                            <span>Jadwal: {{ $sched ? $sched->isoFormat('D MMM Y, HH:mm') . ' WIB' : 'Hari ini' }}</span>
+                                        </p>
+                                    @else
+                                        @php
+                                            $checkInTime = $v->waktu_checkin ? \Illuminate\Support\Carbon::parse($v->waktu_checkin) : null;
+                                        @endphp
+                                        <p class="text-xs text-gray-400">Masuk: {{ $checkInTime ? $checkInTime->format('H:i') : '-' }}</p>
+                                    @endif
                                 </td>
 
                                 <!-- Label Status Tag (UI/UX) -->
                                 <td class="py-3.5 pr-2">
                                     @if($v->status === 'SCHEDULED')
                                         <!-- Biru: Pra-Registrasi / Dijadwalkan -->
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 text-blue-800 border border-blue-200 rounded-full text-xs font-semibold">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                                            Dijadwalkan
-                                        </span>
+                                        <div>
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 text-blue-800 border border-blue-200 rounded-full text-xs font-semibold">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                                                Dijadwalkan
+                                            </span>
+                                            @if($v->scheduled_at)
+                                                <p class="text-[10px] text-blue-600 font-medium mt-0.5">
+                                                    {{ \Illuminate\Support\Carbon::parse($v->scheduled_at)->diffForHumans() }}
+                                                </p>
+                                            @endif
+                                        </div>
                                     @elseif($v->status === 'INSIDE')
                                         <!-- Hijau: Di Dalam Gedung -->
                                         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-full text-xs font-semibold">
@@ -1036,6 +1067,13 @@
                         <label class="block text-xs font-semibold text-gray-700">Keperluan Kunjungan</label>
                         <input type="text" wire:model="edit_purpose" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
                         @error('edit_purpose') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700">Tanggal & Jam Jadwal Janji Temu</label>
+                        <input type="datetime-local" wire:model="edit_scheduled_at" class="mt-1 w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        <p class="text-[10px] text-gray-400 mt-0.5">Khusus tamu yang berstatus pra-registrasi/terjadwal</p>
+                        @error('edit_scheduled_at') <p class="text-xs text-rose-500 mt-0.5">{{ $message }}</p> @enderror
                     </div>
 
                     <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200">
